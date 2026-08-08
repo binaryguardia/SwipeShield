@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"net/http"
 	"path"
+	"strings"
 )
 
 //go:embed all:dist
@@ -26,8 +27,11 @@ func mustSub(fsys fs.FS, dir string) fs.FS {
 
 // serve serves the embedded dashboard build with SPA fallback.
 func serve(w http.ResponseWriter, r *http.Request) {
-	name := path.Clean("/" + r.URL.Path)
-	if name == "/" || !exists(distFS, name) {
+	// fs.Stat only accepts paths without a leading slash, so trim it before
+	// the existence check. A leading "/" would make every asset request fall
+	// through to the SPA shell (returning index.html for .js/.css files).
+	name := strings.TrimPrefix(path.Clean(r.URL.Path), "/")
+	if name == "" || name == "." || !exists(distFS, name) {
 		// Unknown client route (or root) → serve the app shell.
 		r2 := r.Clone(r.Context())
 		r2.URL.Path = "/"

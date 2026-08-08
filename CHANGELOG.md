@@ -47,6 +47,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `core/go.mod` Go directive bumped to `1.25.12` to pick up Go stdlib security
   fixes flagged by govulncheck.
 
+### Fixed
+
+- Dashboard assets (`/assets/*.js`, `*.css`) now serve with their real content
+  and MIME type. The SPA fallback's existence check used a leading-slash path,
+  which `io/fs` rejects, so every asset request fell through to the app shell
+  and the browser refused to load the bundle as `text/html`
+  (`core/internal/webui/embed.go`). Covered by `embed_test.go`
+  (`-tags webui`).
+
 - Module path renamed to `github.com/binaryguardia/swipeshield`; agent
   protobuf regenerated for the new package path.
 - `core/config.example.json` added showing the full gateway + manager
