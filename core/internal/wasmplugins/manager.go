@@ -1,4 +1,4 @@
-// Package wasmplugins implements the WASM plugin host for SentinelWAF.
+// Package wasmplugins implements the WASM plugin host for SwipeShield.
 //
 // Plugin ABI: a plugin is a WASI command module (any language that compiles
 // to WASI — Go, Rust, C, AssemblyScript, TinyGo). The host passes a JSON

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net"
 
-	"github.com/binaryguardia/sentinelwaf/internal/fingerprint"
+	"github.com/binaryguardia/swipeshield/internal/fingerprint"
 )
 
 // fingerprintListener wraps accepted connections to peek the TLS ClientHello

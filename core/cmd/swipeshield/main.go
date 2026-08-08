@@ -1,6 +1,6 @@
-// Command sentinelwaf runs the SentinelWAF reverse-proxy gateway.
+// Command swipeshield runs the SwipeShield reverse-proxy gateway.
 //
-// Usage: sentinelwaf -config config.json
+// Usage: swipeshield -config config.json
 //
 // It loads the config, builds per-site engines, and serves HTTP (optionally
 // with TLS termination and ClientHello fingerprint capture) on the listeners
@@ -24,13 +24,13 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/binaryguardia/sentinelwaf/internal/agent"
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/envoy"
-	"github.com/binaryguardia/sentinelwaf/internal/mgmtapi"
-	"github.com/binaryguardia/sentinelwaf/internal/proxy"
-	"github.com/binaryguardia/sentinelwaf/internal/store"
-	"github.com/binaryguardia/sentinelwaf/internal/webui"
+	"github.com/binaryguardia/swipeshield/internal/agent"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/envoy"
+	"github.com/binaryguardia/swipeshield/internal/mgmtapi"
+	"github.com/binaryguardia/swipeshield/internal/proxy"
+	"github.com/binaryguardia/swipeshield/internal/store"
+	"github.com/binaryguardia/swipeshield/internal/webui"
 )
 
 // Version is the release version of the gateway. Override at build time with
@@ -44,7 +44,7 @@ func main() {
 	defer func() {
 		if rec := recover(); rec != nil {
 			log.Error().Interface("panic", rec).
-				Stack().Msg("sentinelwaf crashed; restarting")
+				Stack().Msg("swipeshield crashed; restarting")
 			os.Exit(1)
 		}
 	}()
@@ -63,7 +63,7 @@ func main() {
 
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	log.Info().Str("version", Version).Msg("SentinelWAF starting")
+	log.Info().Str("version", Version).Msg("SwipeShield starting")
 
 	cfg, err := config.Load(*configPath)
 	if err != nil {

@@ -1,9 +1,13 @@
-# SentinelWAF
+# SwipeShield
+
+<p align="center">
+  <img src="docs/logo.jpeg" alt="SwipeShield" width="160" />
+</p>
 
 **A self-hostable, protocol-aware Web Application & API Protection (WAAP)
 gateway.**
 
-SentinelWAF inspects application-layer traffic — REST, GraphQL, gRPC,
+SwipeShield inspects application-layer traffic — REST, GraphQL, gRPC,
 WebSocket, and SSE — against layered defenses: a ModSecurity-style rule
 engine, distributed-safe rate limits, bot detection with proof-of-work
 challenges, TLS fingerprinting, and optional ML / LLM-protection and WASM
@@ -17,7 +21,7 @@ in a service mesh.
 
 ```
                          ┌────────────────────────────────────────────┐
-  Client ──TLS 1.3──▶   │              SentinelWAF                    │
+  Client ──TLS 1.3──▶   │              SwipeShield                    │
   (h1 / h2 / h3)         │                                            │
                          │  listeners  ──▶  host/site routing         │
                          │                                            │
@@ -63,8 +67,8 @@ validation. See the full does-not-protect matrix in
 Requires Docker and Go 1.25+.
 
 ```sh
-git clone https://github.com/sentinelwaf/sentinelwaf
-cd sentinelwaf
+git clone https://github.com/swipeshield/swipeshield
+cd swipeshield
 
 # Build the waf + demo images, bring the stack up, and run the smoke suite
 ./scripts/smoke-test.sh --build
@@ -114,8 +118,8 @@ Run the same decision engine inside a service mesh:
 
 ```sh
 cd core
-go build ./cmd/sentinelwaf
-sentinelwaf -config /path/to/config.json   # with "envoy": {"listen": ":9100"}
+go build ./cmd/swipeshield
+swipeshield -config /path/to/config.json   # with "envoy": {"listen": ":9100"}
 ```
 
 Reference Envoy/Istio configs in `deploy/envoy/` (`ext_proc.yaml`,
@@ -137,7 +141,7 @@ calls, no secrets in code, tests before merge).
 ```sh
 cd core
 go vet ./... && go test -race ./...
-go build ./cmd/sentinelwaf
+go build ./cmd/swipeshield
 ```
 
 CI runs build, vet, `go test -race`, gitleaks (secret scan), and govulncheck

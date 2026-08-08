@@ -90,7 +90,7 @@
     "listen": ":9443"
   },
   "db": {
-    "path": "data/sentinelwaf.db"
+    "path": "data/swipeshield.db"
   },
   "auth": {
     "jwt_secret": "change-me-to-a-long-random-string",

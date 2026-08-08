@@ -12,7 +12,7 @@ if [[ "${1:-}" == "--build" ]]; then
   BUILD="--build"
 fi
 
-echo "==> Bringing up the SentinelWAF stack (waf + demo)..."
+echo "==> Bringing up the SwipeShield stack (waf + demo)..."
 if [[ -n "$BUILD" ]]; then
   # Registry/DNS hiccups can make an otherwise-correct build fail once;
   # retry a couple of times before giving up.

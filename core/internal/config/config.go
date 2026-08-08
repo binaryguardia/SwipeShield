@@ -1,4 +1,4 @@
-// Package config defines the SentinelWAF configuration model and loader.
+// Package config defines the SwipeShield configuration model and loader.
 //
 // Configuration is loaded from a JSON or YAML file, overlaid with environment
 // variables, validated, and made available for atomic hot-reload. A malformed
@@ -81,7 +81,7 @@ const (
 	ActionLog       Action = "log"
 )
 
-// Config is the top-level SentinelWAF configuration.
+// Config is the top-level SwipeShield configuration.
 type Config struct {
 	Version     int               `json:"version" yaml:"version"`
 	Listeners   []Listener        `json:"listeners" yaml:"listeners"` // front-end listeners
@@ -282,7 +282,7 @@ type AgentConfig struct {
 
 // DBConfig configures the persistent SQLite store backing agents and events.
 type DBConfig struct {
-	Path string `json:"path" yaml:"path"` // e.g. "/var/lib/sentinelwaf/sentinelwaf.db"
+	Path string `json:"path" yaml:"path"` // e.g. "/var/lib/swipeshield/swipeshield.db"
 }
 
 // AuthConfig configures Management API authentication.
@@ -491,7 +491,7 @@ func (c *Config) Validate() error {
 		c.Agent.TokenTTL = Duration(24 * time.Hour)
 	}
 	if c.DB.Path == "" && (c.Admin.Enabled || c.Agent.Enabled) {
-		c.DB.Path = "data/sentinelwaf.db"
+		c.DB.Path = "data/swipeshield.db"
 	}
 	return nil
 }

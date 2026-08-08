@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/dynamicpb"
 
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/decision"
 )
 
 // Registry compiles and indexes protobuf schemas.

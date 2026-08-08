@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
-	"github.com/binaryguardia/sentinelwaf/internal/ratelimit"
-	"github.com/binaryguardia/sentinelwaf/internal/ruleengine"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/ratelimit"
+	"github.com/binaryguardia/swipeshield/internal/ruleengine"
 )
 
 // Inspector applies per-message rate limits and pattern rules to the frames

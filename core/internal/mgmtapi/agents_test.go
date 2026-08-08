@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/proxy"
-	"github.com/binaryguardia/sentinelwaf/internal/store"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/proxy"
+	"github.com/binaryguardia/swipeshield/internal/store"
 )
 
 func agentTestServer(t *testing.T, st *store.Store) (*httptest.Server, *proxy.Gateway) {
@@ -118,7 +118,7 @@ func TestAgentEndpoints(t *testing.T) {
 	if created.Token == "" || created.EnrollCommand == "" {
 		t.Fatalf("expected token and enroll command, got %s", b)
 	}
-	if !strings.Contains(created.EnrollCommand, "sentinelwaf-agent enroll -m") ||
+	if !strings.Contains(created.EnrollCommand, "swipeshield-agent enroll -m") ||
 		!strings.Contains(created.EnrollCommand, ":9443 -t") {
 		t.Fatalf("enroll command malformed: %s", created.EnrollCommand)
 	}

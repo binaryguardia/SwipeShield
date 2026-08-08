@@ -7,7 +7,7 @@ package decision
 import (
 	"net/http"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/config"
 )
 
 // Action mirrors config.Action for verdicts.

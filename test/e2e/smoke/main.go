@@ -1,5 +1,5 @@
 // Command smoke runs the fresh-clone quickstart checks against a running
-// SentinelWAF stack: it verifies REST + GraphQL + WebSocket protection with
+// SwipeShield stack: it verifies REST + GraphQL + WebSocket protection with
 // the exact demo config shipped in deploy/compose.
 //
 // Usage: go run . -base http://127.0.0.1:8080 -host localhost

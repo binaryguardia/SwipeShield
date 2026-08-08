@@ -1,48 +1,48 @@
-# Reference Kubernetes deployment: SentinelWAF as a mesh sidecar inspecting
+# Reference Kubernetes deployment: SwipeShield as a mesh sidecar inspecting
 # traffic inside the service mesh via Envoy ext_proc.
 #
 # The pod runs two containers sharing the network namespace:
 #   1. `backend`      — the application under protection.
-#   2. `sentinelwaf`  — the decision engine; starts the ext_proc gRPC service
+#   2. `swipeshield`  — the decision engine; starts the ext_proc gRPC service
 #      on port 5090 (set envoy.listen). Istio's sidecar proxy streams request
 #      headers/bodies to it and enforces its verdicts.
 #
-# SentinelWAF never modifies traffic itself in this mode; it only decides.
+# SwipeShield never modifies traffic itself in this mode; it only decides.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-with-sentinelwaf
+  name: app-with-swipeshield
   namespace: apps
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: app-with-sentinelwaf
+      app: app-with-swipeshield
   template:
     metadata:
       labels:
-        app: app-with-sentinelwaf
+        app: app-with-swipeshield
     spec:
       containers:
         - name: backend
           image: nginx:1.27
           ports:
             - containerPort: 80
-        - name: sentinelwaf
-          image: sentinelwaf:latest
+        - name: swipeshield
+          image: swipeshield:latest
           imagePullPolicy: IfNotPresent
           args:
-            - -config=/etc/sentinelwaf/config.json
+            - -config=/etc/swipeshield/config.json
             - -mgmt=false
           ports:
             - name: extproc
               containerPort: 5090
           env:
-            - name: SENTINELWAF_ENVOY_LISTEN
+            - name: SWIPESHIELD_ENVOY_LISTEN
               value: ":5090"
           volumeMounts:
             - name: waf-config
-              mountPath: /etc/sentinelwaf
+              mountPath: /etc/swipeshield
               readOnly: true
           securityContext:
             runAsNonRoot: true
@@ -53,12 +53,12 @@ spec:
       volumes:
         - name: waf-config
           configMap:
-            name: sentinelwaf-config
+            name: swipeshield-config
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: sentinelwaf-config
+  name: swipeshield-config
   namespace: apps
 data:
   config.json: |
@@ -78,7 +78,7 @@ data:
           "max_body_bytes": 1048576
         }
       ],
-      "events": { "log_path": "/var/log/sentinelwaf/events.jsonl" }
+      "events": { "log_path": "/var/log/swipeshield/events.jsonl" }
     }
 ---
 # Istio VirtualService so the mesh routes app traffic through the ext_proc
@@ -87,11 +87,11 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-with-sentinelwaf
+  name: app-with-swipeshield
   namespace: apps
 spec:
   selector:
-    app: app-with-sentinelwaf
+    app: app-with-swipeshield
   ports:
     - name: http
       port: 80

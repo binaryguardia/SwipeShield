@@ -39,13 +39,13 @@ func SelfSigned(certPath, keyPath string) error {
 	}
 	tmpl := x509.Certificate{
 		SerialNumber: serial,
-		Subject:      pkix.Name{CommonName: "SentinelWAF manager", Organization: []string{"SentinelWAF"}},
+		Subject:      pkix.Name{CommonName: "SwipeShield manager", Organization: []string{"SwipeShield"}},
 		NotBefore:    time.Now().Add(-time.Hour),
 		NotAfter:     time.Now().Add(10 * 365 * 24 * time.Hour),
 		KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1)},
-		DNSNames:     []string{"localhost", "sentinelwaf"},
+		DNSNames:     []string{"localhost", "swipeshield"},
 	}
 	der, err := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, &priv.PublicKey, priv)
 	if err != nil {

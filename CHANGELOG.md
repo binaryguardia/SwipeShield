@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to SentinelWAF are documented here. The format is based on
+All notable changes to SwipeShield are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -8,12 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Manager control plane** (`core/cmd/sentinelwaf` + `core/internal/agent`,
+- **Manager control plane** (`core/cmd/swipeshield` + `core/internal/agent`,
   `core/internal/store`, `core/internal/mgmtapi`): persistent SQLite store for
   monitored servers, "add by IP" enrollment with one-time tokens, agent
   registry (pending/online/offline) and per-agent event feed served under
   `/api/v1/agents`.
-- **Agent channel** (`core/internal/agent`, `core/cmd/sentinelwaf-agent`):
+- **Agent channel** (`core/internal/agent`, `core/cmd/swipeshield-agent`):
   dial-out gRPC/TLS enrollment and streaming so monitored hosts need no
   inbound ports. Self-signed TLS is auto-generated when no certificates are
   configured; the agent (`enroll` / `run`) tails the local WAF events log and
@@ -31,7 +31,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Module path renamed to `github.com/binaryguardia/sentinelwaf`; agent
+- Module path renamed to `github.com/binaryguardia/swipeshield`; agent
   protobuf regenerated for the new package path.
 - `core/config.example.json` added showing the full gateway + manager
   configuration.
@@ -103,5 +103,5 @@ Initial open-source release. First phase-complete milestone; see
   (see `docs/threat-model.md` §6).
 - WASM plugins run sandboxed with no raw filesystem/network access.
 
-[Unreleased]: https://github.com/sentinelwaf/sentinelwaf/compare/v0.1.0...HEAD
-[v0.1.0]: https://github.com/sentinelwaf/sentinelwaf/releases/tag/v0.1.0
+[Unreleased]: https://github.com/swipeshield/swipeshield/compare/v0.1.0...HEAD
+[v0.1.0]: https://github.com/swipeshield/swipeshield/releases/tag/v0.1.0

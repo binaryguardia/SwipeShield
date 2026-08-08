@@ -12,14 +12,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/decision"
 )
 
 func sampleEvent() Event {
 	return Event{
 		ID:        "evt-1",
 		Timestamp: time.Now(),
-		Schema:    "sentinelwaf",
+		Schema:    "swipeshield",
 		Protocol:  "rest",
 		Decision:  "block",
 		Blocked:   true,
@@ -93,7 +93,7 @@ func TestWebhookSinkRetries(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	s := NewWebhookSink(srv.URL, "sentinelwaf", time.Second)
+	s := NewWebhookSink(srv.URL, "swipeshield", time.Second)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	evt := sampleEvent()

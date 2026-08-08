@@ -1,5 +1,5 @@
 (module
-  ;; fast.wat — a minimal SentinelWAF plugin written in WebAssembly Text.
+  ;; fast.wat — a minimal SwipeShield plugin written in WebAssembly Text.
   ;; Demonstrates the WASI stdout contract: writes a PluginResponse JSON
   ;; verdict and exits. Response is read by the host and folded into the
   ;; decision engine.

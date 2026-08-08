@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/proxy"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/proxy"
 )
 
 func testServer(t *testing.T, sites []config.Site) (*httptest.Server, *proxy.Gateway) {

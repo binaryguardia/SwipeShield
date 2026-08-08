@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/decision"
 )
 
 // pattern is one detection rule.

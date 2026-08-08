@@ -50,7 +50,7 @@ export interface Event {
 
 export const API_BASE: string = (import.meta.env.VITE_API_BASE as string | undefined) || "/api/v1"
 
-const TOKEN_KEY = "sentinelwaf_token"
+const TOKEN_KEY = "swipeshield_token"
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
@@ -93,7 +93,7 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
   try {
     res = await fetch(`${API_BASE}${path}`, { ...init, body, headers })
   } catch {
-    throw new ApiError(0, "Network error: unable to reach the SentinelWAF API")
+    throw new ApiError(0, "Network error: unable to reach the SwipeShield API")
   }
 
   if (res.status === 401) {

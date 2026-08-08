@@ -2,8 +2,8 @@
 core/bin/
 core/dist/
 core/internal/webui/dist/
-/sentinelwaf
-/sentinelwaf-agent
+/swipeshield
+/swipeshield-agent
 test/demoapp/demoapp
 test/e2e/smoke/smoke
 *.exe

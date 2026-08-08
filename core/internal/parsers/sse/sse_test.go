@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/binaryguardia/sentinelwaf/internal/ruleengine"
+	"github.com/binaryguardia/swipeshield/internal/ruleengine"
 )
 
 func TestIsEventStream(t *testing.T) {

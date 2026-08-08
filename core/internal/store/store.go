@@ -1,5 +1,5 @@
 // Package store provides the persistent SQLite-backed data layer for the
-// SentinelWAF manager: enrolled agents, one-time enrollment tokens, and the
+// SwipeShield manager: enrolled agents, one-time enrollment tokens, and the
 // security events agents stream home. It uses a pure-Go SQLite driver
 // (modernc.org/sqlite) so the manager runs with zero CGO/database server
 // dependencies — important for the .deb / AppImage single-binary installs.

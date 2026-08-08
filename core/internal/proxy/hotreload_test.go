@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/fingerprint"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/fingerprint"
 )
 
 // cloneSite returns a copy of a site so tests can mutate per-case configs.
@@ -27,7 +27,7 @@ func reloadCfg(sites []config.Site) *config.Config {
 	return &config.Config{
 		Version: 1,
 		Sites:   sites,
-		Events:  config.EventConfig{LogPath: "/tmp/sentinelwaf-test-events.log"},
+		Events:  config.EventConfig{LogPath: "/tmp/swipeshield-test-events.log"},
 	}
 }
 

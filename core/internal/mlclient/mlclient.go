@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/config"
 )
 
 // Features is the JSON payload sent to the ML service.

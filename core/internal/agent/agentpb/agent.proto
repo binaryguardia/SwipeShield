@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-// Agent channel between SentinelWAF agents (on monitored servers) and the
-// manager (the sentinelwaf gateway). Agents dial OUT to the manager, so they
+// Agent channel between SwipeShield agents (on monitored servers) and the
+// manager (the swipeshield gateway). Agents dial OUT to the manager, so they
 // work behind NAT with no inbound ports on monitored hosts.
-package sentinelwaf.agent.v1;
+package swipeshield.agent.v1;
 
-option go_package = "github.com/binaryguardia/sentinelwaf/internal/agent/agentpb";
+option go_package = "github.com/binaryguardia/swipeshield/internal/agent/agentpb";
 
 service AgentService {
   // Enroll presents a one-time token and receives a long-term agent secret.

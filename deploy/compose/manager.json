@@ -16,7 +16,7 @@
     }
   ],
   "events": {
-    "log_path": "/var/lib/sentinelwaf/events.log"
+    "log_path": "/var/lib/swipeshield/events.log"
   },
   "admin": {
     "enabled": true,
@@ -27,7 +27,7 @@
     "listen": ":9443"
   },
   "db": {
-    "path": "/var/lib/sentinelwaf/sentinelwaf.db"
+    "path": "/var/lib/swipeshield/swipeshield.db"
   },
   "auth": {
     "jwt_secret": "compose-dev-secret-change-me",

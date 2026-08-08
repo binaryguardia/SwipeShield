@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/decision"
 )
 
 type fakeGW struct {
@@ -122,7 +122,7 @@ func TestAllowRequest(t *testing.T) {
 		t.Fatalf("expected CONTINUE, got %v", hr.GetResponse().GetStatus())
 	}
 	set := hr.GetResponse().GetHeaderMutation().GetSetHeaders()
-	if len(set) == 0 || set[0].GetHeader().GetKey() != "x-sentinelwaf-verdict" {
+	if len(set) == 0 || set[0].GetHeader().GetKey() != "x-swipeshield-verdict" {
 		t.Fatalf("expected verdict header mutation, got %v", set)
 	}
 	if gw.gotHost != "shop.example.com" || gw.gotMethod != "POST" || gw.gotPath != "/api/login" {

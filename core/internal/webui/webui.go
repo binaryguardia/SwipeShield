@@ -1,4 +1,4 @@
-// Package webui serves the SentinelWAF management dashboard. The dashboard is
+// Package webui serves the SwipeShield management dashboard. The dashboard is
 // a Vite/React single-page app (dashboard/). Two build modes exist:
 //
 //   - default build (no tags): serves a stub page telling the operator the UI

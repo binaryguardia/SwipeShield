@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
-	"github.com/binaryguardia/sentinelwaf/internal/eventpipeline"
+	"github.com/binaryguardia/swipeshield/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/eventpipeline"
 )
 
 func newEventID() string {

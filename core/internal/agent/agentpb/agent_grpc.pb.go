@@ -4,8 +4,8 @@
 // - protoc             v5.29.3
 // source: agent.proto
 
-// Agent channel between SentinelWAF agents (on monitored servers) and the
-// manager (the sentinelwaf gateway). Agents dial OUT to the manager, so they
+// Agent channel between SwipeShield agents (on monitored servers) and the
+// manager (the swipeshield gateway). Agents dial OUT to the manager, so they
 // work behind NAT with no inbound ports on monitored hosts.
 
 package agentpb
@@ -23,8 +23,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AgentService_Enroll_FullMethodName = "/sentinelwaf.agent.v1.AgentService/Enroll"
-	AgentService_Stream_FullMethodName = "/sentinelwaf.agent.v1.AgentService/Stream"
+	AgentService_Enroll_FullMethodName = "/swipeshield.agent.v1.AgentService/Enroll"
+	AgentService_Stream_FullMethodName = "/swipeshield.agent.v1.AgentService/Stream"
 )
 
 // AgentServiceClient is the client API for AgentService service.
@@ -144,7 +144,7 @@ type AgentService_StreamServer = grpc.BidiStreamingServer[AgentToManager, Manage
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AgentService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "sentinelwaf.agent.v1.AgentService",
+	ServiceName: "swipeshield.agent.v1.AgentService",
 	HandlerType: (*AgentServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

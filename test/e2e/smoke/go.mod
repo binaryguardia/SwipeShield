@@ -1,4 +1,4 @@
-module sentinelwaf/smoke
+module swipeshield/smoke
 
 go 1.24.4
 

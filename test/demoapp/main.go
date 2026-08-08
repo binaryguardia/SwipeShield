@@ -1,5 +1,5 @@
 // Command demoapp is the reference backend used by the compose quickstart and
-// the fresh-clone smoke test. It exposes three endpoints so SentinelWAF's
+// the fresh-clone smoke test. It exposes three endpoints so SwipeShield's
 // protocol-aware inspection can be demonstrated end to end:
 //
 //	GET/POST /api/*   REST endpoints

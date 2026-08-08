@@ -15,7 +15,7 @@ import (
 	"github.com/cilium/ebpf"
 	"github.com/rs/zerolog/log"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/config"
 )
 
 // Filter wraps an optional loaded eBPF collection.

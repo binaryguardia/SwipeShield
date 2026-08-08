@@ -1,4 +1,4 @@
-// Package agent implements the manager side of the SentinelWAF agent channel:
+// Package agent implements the manager side of the SwipeShield agent channel:
 // a TLS gRPC service agents on monitored servers dial out to. It handles
 // one-time enrollment (token → long-term secret) and the always-on stream of
 // heartbeats and security events that back the dashboard's live view.
@@ -23,8 +23,8 @@ import (
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 
-	"github.com/binaryguardia/sentinelwaf/internal/agent/agentpb"
-	"github.com/binaryguardia/sentinelwaf/internal/store"
+	"github.com/binaryguardia/swipeshield/internal/agent/agentpb"
+	"github.com/binaryguardia/swipeshield/internal/store"
 )
 
 // Server is the manager-side gRPC service for agents.

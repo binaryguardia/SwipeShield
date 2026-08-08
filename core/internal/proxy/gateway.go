@@ -1,4 +1,4 @@
-// Package proxy implements the SentinelWAF reverse-proxy gateway. It
+// Package proxy implements the SwipeShield reverse-proxy gateway. It
 // terminates TLS (capturing JA3/JA4 from the ClientHello), routes by Host to
 // the matching site, buffers bounded bodies, runs the full inspection chain
 // (rule engine, protocol parsers, rate limits, bot scoring + proof-of-work
@@ -25,19 +25,19 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/binaryguardia/sentinelwaf/internal/botscoring"
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
-	"github.com/binaryguardia/sentinelwaf/internal/eventpipeline"
-	"github.com/binaryguardia/sentinelwaf/internal/fingerprint"
-	"github.com/binaryguardia/sentinelwaf/internal/llmprotect"
-	"github.com/binaryguardia/sentinelwaf/internal/mlclient"
-	"github.com/binaryguardia/sentinelwaf/internal/parsers/grpcproto"
-	"github.com/binaryguardia/sentinelwaf/internal/parsers/websocket"
-	"github.com/binaryguardia/sentinelwaf/internal/ratelimit"
-	"github.com/binaryguardia/sentinelwaf/internal/ruleengine"
-	"github.com/binaryguardia/sentinelwaf/internal/telemetry"
-	"github.com/binaryguardia/sentinelwaf/internal/wasmplugins"
+	"github.com/binaryguardia/swipeshield/internal/botscoring"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/eventpipeline"
+	"github.com/binaryguardia/swipeshield/internal/fingerprint"
+	"github.com/binaryguardia/swipeshield/internal/llmprotect"
+	"github.com/binaryguardia/swipeshield/internal/mlclient"
+	"github.com/binaryguardia/swipeshield/internal/parsers/grpcproto"
+	"github.com/binaryguardia/swipeshield/internal/parsers/websocket"
+	"github.com/binaryguardia/swipeshield/internal/ratelimit"
+	"github.com/binaryguardia/swipeshield/internal/ruleengine"
+	"github.com/binaryguardia/swipeshield/internal/telemetry"
+	"github.com/binaryguardia/swipeshield/internal/wasmplugins"
 )
 
 // Gateway is a running instance of the WAF proxy.

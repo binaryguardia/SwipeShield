@@ -1,4 +1,4 @@
-// Package mgmtapi implements the SentinelWAF Management API: a JWT-protected
+// Package mgmtapi implements the SwipeShield Management API: a JWT-protected
 // REST surface for managing sites, custom rules, and the fingerprint
 // blocklist, plus live metrics and an SSE event stream. All mutations are
 // validated against the config schema and hot-applied through the gateway so
@@ -32,10 +32,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/eventpipeline"
-	"github.com/binaryguardia/sentinelwaf/internal/store"
-	"github.com/binaryguardia/sentinelwaf/internal/telemetry"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/eventpipeline"
+	"github.com/binaryguardia/swipeshield/internal/store"
+	"github.com/binaryguardia/swipeshield/internal/telemetry"
 )
 
 // Backend is the gateway surface the API drives. Implemented by proxy.Gateway.

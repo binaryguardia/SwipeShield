@@ -1,6 +1,6 @@
 ---
 name: Pull request
-about: Submit changes to SentinelWAF
+about: Submit changes to SwipeShield
 title: ''
 labels: ''
 assignees: ''

@@ -1,4 +1,4 @@
-# PHASES.md — SentinelWAF Build Phases (v2)
+# PHASES.md — SwipeShield Build Phases (v2)
 
 Feed the agent one phase at a time. Don't start a phase until the previous
 one's Definition of Done is actually verified, not just "code exists."
@@ -166,7 +166,7 @@ one's Definition of Done is actually verified, not just "code exists."
 - Build the Envoy ext_proc or WASM-filter target so core logic can run as
   a mesh sidecar
 - Reference Envoy/Istio config in `deploy/envoy/`
-- **DoD:** Reference k8s manifest deploys SentinelWAF as an Istio sidecar,
+- **DoD:** Reference k8s manifest deploys SwipeShield as an Istio sidecar,
   correctly inspects traffic within the mesh
 
 ## P20. Hardening, Testing, Docs

@@ -8,7 +8,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-echo "==> Bringing up the SentinelWAF stack (gateway + manager + demo)..."
+echo "==> Bringing up the SwipeShield stack (gateway + manager + demo)..."
 docker compose up -d
 
 echo "==> Waiting for manager health..."
@@ -30,7 +30,7 @@ BASE=http://127.0.0.1:9090
 echo "==> Dashboard"
 DASH=$(curl -s -o /tmp/manager-dash.html -w '%{http_code}' "$BASE/")
 echo "GET / -> $DASH"
-grep -qi sentinelwaf /tmp/manager-dash.html || { echo "!! dashboard content missing" >&2; docker compose down -v; exit 1; }
+grep -qi swipeshield /tmp/manager-dash.html || { echo "!! dashboard content missing" >&2; docker compose down -v; exit 1; }
 
 echo "==> Auth"
 TOK=$(curl -s -X POST -H 'Content-Type: application/json' \
@@ -51,10 +51,10 @@ AGENT_TOKEN=$(echo "$RESP" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p' | head -1)
 echo "agent=$AGENT_ID token=${AGENT_TOKEN:0:8}..."
 
 echo "==> Agent enroll + stream"
-(cd core && go build -o /tmp/sentinelwaf-agent ./cmd/sentinelwaf-agent)
-/tmp/sentinelwaf-agent enroll -m 127.0.0.1:9443 -t "$AGENT_TOKEN" -config /tmp/manager-agent.json >/dev/null
+(cd core && go build -o /tmp/swipeshield-agent ./cmd/swipeshield-agent)
+/tmp/swipeshield-agent enroll -m 127.0.0.1:9443 -t "$AGENT_TOKEN" -config /tmp/manager-agent.json >/dev/null
 mkdir -p /tmp/manager-events && : > /tmp/manager-events/events.log
-/tmp/sentinelwaf-agent run -config /tmp/manager-agent.json -waf-log /tmp/manager-events/events.log > /tmp/manager-agent.log 2>&1 &
+/tmp/swipeshield-agent run -config /tmp/manager-agent.json -waf-log /tmp/manager-events/events.log > /tmp/manager-agent.log 2>&1 &
 AGENT=$!
 sleep 2
 echo '{"event":"blocked","rule":"933100","status":403,"host":"web-01"}' >> /tmp/manager-events/events.log

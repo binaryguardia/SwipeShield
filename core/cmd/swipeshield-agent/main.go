@@ -1,12 +1,12 @@
-// Command sentinelwaf-agent is the small always-on agent installed on each
-// monitored server. It dials OUT to the SentinelWAF manager, enrolls with a
+// Command swipeshield-agent is the small always-on agent installed on each
+// monitored server. It dials OUT to the SwipeShield manager, enrolls with a
 // one-time token, and then streams heartbeats and (optionally) the local
 // WAF's security events back home. No inbound ports are required on the host.
 //
 // Usage:
 //
-//	sentinelwaf-agent enroll -m manager.example.com:9443 -t <token>
-//	sentinelwaf-agent run                  # run in foreground (systemd)
+//	swipeshield-agent enroll -m manager.example.com:9443 -t <token>
+//	swipeshield-agent run                  # run in foreground (systemd)
 package main
 
 import (
@@ -17,8 +17,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/agent/agentclient"
-	"github.com/binaryguardia/sentinelwaf/internal/agent/agentpb"
+	"github.com/binaryguardia/swipeshield/internal/agent/agentclient"
+	"github.com/binaryguardia/swipeshield/internal/agent/agentpb"
 )
 
 // Version is the agent release version.
@@ -26,11 +26,11 @@ var Version = "v0.1.0"
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "sentinelwaf-agent %s\n\n", Version)
+		fmt.Fprintf(os.Stderr, "swipeshield-agent %s\n\n", Version)
 		fmt.Fprintln(os.Stderr, "Usage:")
-		fmt.Fprintln(os.Stderr, "  sentinelwaf-agent enroll -m HOST:PORT -t TOKEN [-config PATH] [-insecure]")
-		fmt.Fprintln(os.Stderr, "  sentinelwaf-agent run [-config PATH] [-insecure]")
-		fmt.Fprintln(os.Stderr, "  sentinelwaf-agent -version")
+		fmt.Fprintln(os.Stderr, "  swipeshield-agent enroll -m HOST:PORT -t TOKEN [-config PATH] [-insecure]")
+		fmt.Fprintln(os.Stderr, "  swipeshield-agent run [-config PATH] [-insecure]")
+		fmt.Fprintln(os.Stderr, "  swipeshield-agent -version")
 		flag.PrintDefaults()
 	}
 	if len(os.Args) > 1 && os.Args[1] == "-version" {
@@ -76,7 +76,7 @@ func runEnroll(args []string) {
 		log.Fatalf("save config: %v", err)
 	}
 	log.Printf("enrolled as %s with manager %s (config: %s)", cfg.AgentID, cfg.Manager, *configPath)
-	log.Printf("start the agent with: sentinelwaf-agent run")
+	log.Printf("start the agent with: swipeshield-agent run")
 }
 
 func runAgent(args []string) {

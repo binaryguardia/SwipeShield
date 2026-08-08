@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/binaryguardia/sentinelwaf/internal/agent/agentpb"
-	"github.com/binaryguardia/sentinelwaf/internal/store"
+	"github.com/binaryguardia/swipeshield/internal/agent/agentpb"
+	"github.com/binaryguardia/swipeshield/internal/store"
 )
 
 func startAgentServer(t *testing.T, s *store.Store) (agentpb.AgentServiceClient, func()) {

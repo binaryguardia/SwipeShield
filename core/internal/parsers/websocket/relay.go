@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/decision"
 )
 
 // RelayOption is a knobs struct for Relay.

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/config"
 )
 
 func testBackend(t *testing.T) *httptest.Server {
@@ -28,7 +28,7 @@ func testGateway(t *testing.T, site *config.Site) *Gateway {
 	cfg := &config.Config{
 		Version: 1,
 		Sites:   []config.Site{*site},
-		Events:  config.EventConfig{LogPath: "/tmp/sentinelwaf-test-events.log"},
+		Events:  config.EventConfig{LogPath: "/tmp/swipeshield-test-events.log"},
 	}
 	if err := cfg.Validate(); err != nil {
 		t.Fatal(err)

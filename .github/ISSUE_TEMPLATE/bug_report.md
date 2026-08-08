@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a defect in SentinelWAF
+about: Report a defect in SwipeShield
 title: "[bug] "
 labels: bug
 assignees: ''

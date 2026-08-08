@@ -1,10 +1,10 @@
-# SentinelWAF Threat Model
+# SwipeShield Threat Model
 
-This document is the honest, explicit security claim for SentinelWAF. It exists
+This document is the honest, explicit security claim for SwipeShield. It exists
 so operators don't over-trust us (and we don't over-claim). Read it before
 deploying in front of anything you care about.
 
-## 1. What SentinelWAF is
+## 1. What SwipeShield is
 
 A self-hostable, protocol-aware Web Application & API Protection (WAAP)
 gateway. It terminates client connections and inspects application-layer
@@ -17,7 +17,7 @@ reverse proxy or as an Envoy `ext_proc` sidecar in a service mesh.
 ## 2. Trust boundary
 
 ```
-Client ──TLS──▶ SentinelWAF ──plaintext-or-TLS──▶ Origin application
+Client ──TLS──▶ SwipeShield ──plaintext-or-TLS──▶ Origin application
                      │
                      ├──▶ events pipeline (log / webhook)
                      ├──▶ optional: ML service, LLM-protection service
@@ -56,10 +56,10 @@ Client ──TLS──▶ SentinelWAF ──plaintext-or-TLS──▶ Origin app
 
 | # | Not protected | Why / what to use instead |
 |---|---------------|---------------------------|
-| 1 | **Volumetric (L3/L4) DDoS** — SYN floods, UDP amplification, link saturation | SentinelWAF is application-layer; it never sees packets your infra drops. Use a network/L3-L4 DDoS scrubber. |
-| 2 | **Origin bypass** — attackers hitting the origin IP, port, or an alternate hostname directly | SentinelWAF is not a network firewall. Restrict the origin to the gateway (network ACL / security group). |
+| 1 | **Volumetric (L3/L4) DDoS** — SYN floods, UDP amplification, link saturation | SwipeShield is application-layer; it never sees packets your infra drops. Use a network/L3-L4 DDoS scrubber. |
+| 2 | **Origin bypass** — attackers hitting the origin IP, port, or an alternate hostname directly | SwipeShield is not a network firewall. Restrict the origin to the gateway (network ACL / security group). |
 | 3 | **Business-logic flaws** — IDOR, price/balance manipulation, flawed authz, insecure direct object access | A WAF cannot infer intent. Covered only if you author a WASM plugin / rule, or fix it in the app. |
-| 4 | **Compromised origin / supply-chain compromise** of the app itself | SentinelWAF can't detect a trojaned dependency. Runtime protection (e.g. seccomp, signing) required. |
+| 4 | **Compromised origin / supply-chain compromise** of the app itself | SwipeShield can't detect a trojaned dependency. Runtime protection (e.g. seccomp, signing) required. |
 | 5 | **Cryptographic breaking or TLS interception of pinned clients** | We terminate TLS, we don't break it. Mutual TLS client-auth, key management, pinning are yours. |
 | 6 | **Full DLP / content classification of stored data** | We inspect transit payloads only (size-limited); no at-rest scanning, no PII taxonomy. |
 | 7 | **Sophisticated botnets with distributed IP pools and browser-grade spoofing** | PoW challenges and fingerprinting raise cost; they are deterrence, not a CAPTCHA/botnet-fighting product. JA3/JA4 can be forged by advanced tooling. |
@@ -68,7 +68,7 @@ Client ──TLS──▶ SentinelWAF ──plaintext-or-TLS──▶ Origin app
 | 10 | **Replay within QUIC 0-RTT / early data** | 0-RTT is replayable by design; we surface it in the context (`ZeroRTT`) and you should treat it as non-idempotent-unsafe. |
 | 11 | **Client-side / browser attacks** | XSS *reflected into the client's own browser* is mitigated (403 on known patterns) but DOM-based XSS, malicious JS, or compromised third-party scripts are out of scope. |
 | 12 | **Encrypted payloads / E2E-encrypted API bodies** | If the body is opaque to us (e.g. client-side encryption), rule-based inspection is blind to its contents. |
-| 13 | **Dependence on a single rule engine** | SentinelWAF is defense-in-depth, not a silver bullet. Run it behind or alongside edge WAF/CDN and an RASP agent if your threat model demands. |
+| 13 | **Dependence on a single rule engine** | SwipeShield is defense-in-depth, not a silver bullet. Run it behind or alongside edge WAF/CDN and an RASP agent if your threat model demands. |
 
 ## 5. Assumed-threat list (adversaries)
 
@@ -111,7 +111,7 @@ Read your module's section of `config.example.json` before trusting defaults.
 ## 7. Assumptions & how to keep them true
 
 1. **The gateway process itself is trusted.** If the host is compromised, all
-   bets are off. Run SentinelWAF as a non-root container (`core/Dockerfile`),
+   bets are off. Run SwipeShield as a non-root container (`core/Dockerfile`),
    keep it patched, and watch its logs.
 2. **Secrets never live in config.** TLS keys, API keys, webhook tokens come
    from env/secrets manager. gitleaks runs in CI and blocks committed secrets.

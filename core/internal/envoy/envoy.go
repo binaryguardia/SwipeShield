@@ -1,5 +1,5 @@
 // Package envoy implements the Envoy External Processor (ext_proc) gRPC
-// sidecar. When SentinelWAF is deployed inside an Istio service mesh, the
+// sidecar. When SwipeShield is deployed inside an Istio service mesh, the
 // data-plane sidecar streams request headers and bodies to this server; it
 // maps them onto the gateway inspection pipeline and replies with an allow /
 // block verdict that Envoy enforces in the data plane. No proxying happens
@@ -22,8 +22,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
-	"github.com/binaryguardia/sentinelwaf/internal/proxy"
+	"github.com/binaryguardia/swipeshield/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/proxy"
 )
 
 // evaluator runs the gateway pipeline for one synthetic request. It is an
@@ -130,7 +130,7 @@ func (s *Server) send(stream extproc.ExternalProcessor_ProcessServer, resp *extp
 func allowResponse(verdict decision.Verdict) *extproc.ProcessingResponse {
 	mutation := &corev3.HeaderValueOption{
 		Header: &corev3.HeaderValue{
-			Key:   "x-sentinelwaf-verdict",
+			Key:   "x-swipeshield-verdict",
 			Value: string(verdict.Decision),
 		},
 		AppendAction: corev3.HeaderValueOption_OVERWRITE_IF_EXISTS_OR_ADD,
@@ -175,7 +175,7 @@ var statusCodes = map[int]typev3.StatusCode{
 // reasonText folds the top verdict reasons into a short human string.
 func reasonText(verdict decision.Verdict) string {
 	if len(verdict.Reasons) == 0 {
-		return "blocked by SentinelWAF"
+		return "blocked by SwipeShield"
 	}
 	r := verdict.Reasons[0]
 	return fmt.Sprintf("%s: %s (rule %s)", r.Module, r.Message, r.RuleID)

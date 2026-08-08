@@ -1,28 +1,28 @@
-# Reference Envoy bootstrap wiring SentinelWAF's ext_proc sidecar into the
+# Reference Envoy bootstrap wiring SwipeShield's ext_proc sidecar into the
 # mesh data plane.
 #
 # This config lives on an Envoy proxy (the Istio data plane) and tells it to
-# stream every HTTP request's headers and body to the SentinelWAF ext_proc
-# gRPC service (internal/envoy). SentinelWAF replies with an allow/block
+# stream every HTTP request's headers and body to the SwipeShield ext_proc
+# gRPC service (internal/envoy). SwipeShield replies with an allow/block
 # verdict that Envoy enforces — the WAF decision engine never sits in the
 # request path itself.
 #
 # Typical layout in a pod:
 #   sidecar-istio:  Envoy (data plane)   -> 127.0.0.1:5090 (ext_proc, gRPC)
-#   sidecar-waf:    SentinelWAF gateway running with envoy.listen=:5090
+#   sidecar-waf:    SwipeShield gateway running with envoy.listen=:5090
 #
-# Wire this via a listener/filter chain; the cluster "sentinelwaf_ext_proc"
-# must point at the SentinelWAF sidecar (e.g. 127.0.0.1:5090) in your mesh.
+# Wire this via a listener/filter chain; the cluster "swipeshield_ext_proc"
+# must point at the SwipeShield sidecar (e.g. 127.0.0.1:5090) in your mesh.
 
 static_resources:
   clusters:
-    # The SentinelWAF decision engine, reached over plaintext gRPC inside the
+    # The SwipeShield decision engine, reached over plaintext gRPC inside the
     # pod. Use TLS + auth in production and reference it via mesh DNS.
-    - name: sentinelwaf_ext_proc
+    - name: swipeshield_ext_proc
       connect_timeout: 1s
       type: STRICT_DNS
       load_assignment:
-        cluster_name: sentinelwaf_ext_proc
+        cluster_name: swipeshield_ext_proc
         endpoints:
           - lb_endpoints:
               - endpoint:
@@ -54,14 +54,14 @@ static_resources:
                         - match: { prefix: "/" }
                           route: { cluster: backend_upstream }
                 http_filters:
-                  # SentinelWAF inspection runs first; if it issues an
+                  # SwipeShield inspection runs first; if it issues an
                   # ImmediateResponse the request never reaches the backend.
                   - name: envoy.filters.http.ext_proc
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.ext_proc.v3.ExternalProcessor
                       grpc_service:
                         envoy_grpc:
-                          cluster_name: sentinelwaf_ext_proc
+                          cluster_name: swipeshield_ext_proc
                       processing_mode:
                         request_header_mode: SEND
                         request_body_mode: BUFFERED

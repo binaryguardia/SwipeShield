@@ -1,4 +1,4 @@
-// Example SentinelWAF WASM plugin written in Go, compiled to WASI.
+// Example SwipeShield WASM plugin written in Go, compiled to WASI.
 //
 // The host sends a PluginRequest (JSON) on stdin and reads a PluginResponse
 // (JSON) on stdout. This plugin blocks requests whose body contains a

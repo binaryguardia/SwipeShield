@@ -16,14 +16,14 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/decision"
 )
 
 // Event is the canonical structured audit event.
 type Event struct {
 	ID         string            `json:"id"`
 	Timestamp  time.Time         `json:"timestamp"`
-	Schema     string            `json:"schema"` // "sentinelwaf" | "wazuh" | "prajna"
+	Schema     string            `json:"schema"` // "swipeshield" | "wazuh" | "prajna"
 	SiteID     string            `json:"site_id,omitempty"`
 	SiteName   string            `json:"site_name,omitempty"`
 	Protocol   string            `json:"protocol"`            // rest | graphql | grpc | websocket | sse
@@ -94,7 +94,7 @@ func New(opts Options, sinks ...Sink) *Pipeline {
 		opts.BodyTruncate = 2048
 	}
 	if opts.Schema == "" {
-		opts.Schema = "sentinelwaf"
+		opts.Schema = "swipeshield"
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	p := &Pipeline{
@@ -131,14 +131,14 @@ func (p *Pipeline) Emit(e Event) {
 }
 
 func (p *Pipeline) schemaOrDefault(s string) string {
-	if s == "" || s == "sentinelwaf" {
+	if s == "" || s == "swipeshield" {
 		return p.schema() // keep caller's override if set
 	}
 	return s
 }
 
 func (p *Pipeline) schema() string {
-	return "sentinelwaf"
+	return "swipeshield"
 }
 
 func (p *Pipeline) drain() {
@@ -334,7 +334,7 @@ func mapToSchema(e *Event, schema string) any {
 	default:
 		return map[string]any{
 			"timestamp": e.Timestamp.UTC().Format(time.RFC3339Nano),
-			"source":    "sentinelwaf",
+			"source":    "swipeshield",
 			"event":     e,
 		}
 	}
@@ -344,13 +344,13 @@ func wazuhEvent(e *Event) map[string]any {
 	return map[string]any{
 		"timestamp": e.Timestamp.UTC().Format(time.RFC3339Nano),
 		"agent":     map[string]any{"name": e.SiteID},
-		"manager":   map[string]any{"name": "sentinelwaf"},
+		"manager":   map[string]any{"name": "swipeshield"},
 		"rule": map[string]any{
 			"level":       levelFor(e),
 			"id":          e.Decision,
-			"description": fmt.Sprintf("SentinelWAF %s for %s", e.Decision, e.Path),
+			"description": fmt.Sprintf("SwipeShield %s for %s", e.Decision, e.Path),
 		},
-		"decoder": map[string]any{"name": "sentinelwaf"},
+		"decoder": map[string]any{"name": "swipeshield"},
 		"data": map[string]any{
 			"srcip":     e.ClientIP,
 			"srcport":   0,
@@ -364,14 +364,14 @@ func wazuhEvent(e *Event) map[string]any {
 			"bot_score": e.BotScore,
 			"ja4":       e.JA4,
 		},
-		"full_log": fmt.Sprintf("SentinelWAF %s %s %s from %s", e.Decision, e.Method, e.Path, e.ClientIP),
+		"full_log": fmt.Sprintf("SwipeShield %s %s %s from %s", e.Decision, e.Method, e.Path, e.ClientIP),
 	}
 }
 
 func prajnaEvent(e *Event) map[string]any {
 	return map[string]any{
 		"timestamp": e.Timestamp.UTC().Format(time.RFC3339Nano),
-		"source":    "sentinelwaf",
+		"source":    "swipeshield",
 		"threat":    e.Decision == "block" || e.Decision == "challenge",
 		"rule":      e.Reasons,
 		"event":     e,

@@ -4,7 +4,7 @@
 # and serve the UI from the embedded filesystem.
 #
 #   ./scripts/build-dashboard.sh
-#   (cd core && go build -tags webui -o sentinelwaf ./cmd/sentinelwaf)
+#   (cd core && go build -tags webui -o swipeshield ./cmd/swipeshield)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -24,5 +24,5 @@ cp -r dashboard/dist/. "$DST/"
 echo "Bundled $(find "$DST" -type f | wc -l) files into internal/webui/dist"
 
 echo "==> Building manager with dashboard..."
-(cd core && go build -tags webui -o "$ROOT/sentinelwaf" ./cmd/sentinelwaf)
-echo "Done. Run ./sentinelwaf -config core/config.example.json"
+(cd core && go build -tags webui -o "$ROOT/swipeshield" ./cmd/swipeshield)
+echo "Done. Run ./swipeshield -config core/config.example.json"

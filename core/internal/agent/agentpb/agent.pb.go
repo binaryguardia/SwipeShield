@@ -4,8 +4,8 @@
 // 	protoc        v5.29.3
 // source: agent.proto
 
-// Agent channel between SentinelWAF agents (on monitored servers) and the
-// manager (the sentinelwaf gateway). Agents dial OUT to the manager, so they
+// Agent channel between SwipeShield agents (on monitored servers) and the
+// manager (the swipeshield gateway). Agents dial OUT to the manager, so they
 // work behind NAT with no inbound ports on monitored hosts.
 
 package agentpb
@@ -403,7 +403,7 @@ var File_agent_proto protoreflect.FileDescriptor
 
 const file_agent_proto_rawDesc = "" +
 	"\n" +
-	"\vagent.proto\x12\x14sentinelwaf.agent.v1\"Z\n" +
+	"\vagent.proto\x12\x14swipeshield.agent.v1\"Z\n" +
 	"\rEnrollRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1a\n" +
 	"\bhostname\x18\x02 \x01(\tR\bhostname\x12\x17\n" +
@@ -413,8 +413,8 @@ const file_agent_proto_rawDesc = "" +
 	"\x06secret\x18\x02 \x01(\tR\x06secret\x12\x16\n" +
 	"\x06status\x18\x03 \x01(\tR\x06status\"\x95\x01\n" +
 	"\x0eAgentToManager\x12?\n" +
-	"\theartbeat\x18\x01 \x01(\v2\x1f.sentinelwaf.agent.v1.HeartbeatH\x00R\theartbeat\x12;\n" +
-	"\x05event\x18\x02 \x01(\v2#.sentinelwaf.agent.v1.SecurityEventH\x00R\x05eventB\x05\n" +
+	"\theartbeat\x18\x01 \x01(\v2\x1f.swipeshield.agent.v1.HeartbeatH\x00R\theartbeat\x12;\n" +
+	"\x05event\x18\x02 \x01(\v2#.swipeshield.agent.v1.SecurityEventH\x00R\x05eventB\x05\n" +
 	"\x03msg\"P\n" +
 	"\tHeartbeat\x12\x0e\n" +
 	"\x02ts\x18\x01 \x01(\x03R\x02ts\x12\x1a\n" +
@@ -428,8 +428,8 @@ const file_agent_proto_rawDesc = "" +
 	"\acommand\x18\x01 \x01(\tR\acommand\x12\x18\n" +
 	"\apayload\x18\x02 \x01(\tR\apayload2\xbd\x01\n" +
 	"\fAgentService\x12S\n" +
-	"\x06Enroll\x12#.sentinelwaf.agent.v1.EnrollRequest\x1a$.sentinelwaf.agent.v1.EnrollResponse\x12X\n" +
-	"\x06Stream\x12$.sentinelwaf.agent.v1.AgentToManager\x1a$.sentinelwaf.agent.v1.ManagerToAgent(\x010\x01B=Z;github.com/binaryguardia/sentinelwaf/internal/agent/agentpbb\x06proto3"
+	"\x06Enroll\x12#.swipeshield.agent.v1.EnrollRequest\x1a$.swipeshield.agent.v1.EnrollResponse\x12X\n" +
+	"\x06Stream\x12$.swipeshield.agent.v1.AgentToManager\x1a$.swipeshield.agent.v1.ManagerToAgent(\x010\x01B=Z;github.com/binaryguardia/swipeshield/internal/agent/agentpbb\x06proto3"
 
 var (
 	file_agent_proto_rawDescOnce sync.Once
@@ -445,20 +445,20 @@ func file_agent_proto_rawDescGZIP() []byte {
 
 var file_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_agent_proto_goTypes = []any{
-	(*EnrollRequest)(nil),  // 0: sentinelwaf.agent.v1.EnrollRequest
-	(*EnrollResponse)(nil), // 1: sentinelwaf.agent.v1.EnrollResponse
-	(*AgentToManager)(nil), // 2: sentinelwaf.agent.v1.AgentToManager
-	(*Heartbeat)(nil),      // 3: sentinelwaf.agent.v1.Heartbeat
-	(*SecurityEvent)(nil),  // 4: sentinelwaf.agent.v1.SecurityEvent
-	(*ManagerToAgent)(nil), // 5: sentinelwaf.agent.v1.ManagerToAgent
+	(*EnrollRequest)(nil),  // 0: swipeshield.agent.v1.EnrollRequest
+	(*EnrollResponse)(nil), // 1: swipeshield.agent.v1.EnrollResponse
+	(*AgentToManager)(nil), // 2: swipeshield.agent.v1.AgentToManager
+	(*Heartbeat)(nil),      // 3: swipeshield.agent.v1.Heartbeat
+	(*SecurityEvent)(nil),  // 4: swipeshield.agent.v1.SecurityEvent
+	(*ManagerToAgent)(nil), // 5: swipeshield.agent.v1.ManagerToAgent
 }
 var file_agent_proto_depIdxs = []int32{
-	3, // 0: sentinelwaf.agent.v1.AgentToManager.heartbeat:type_name -> sentinelwaf.agent.v1.Heartbeat
-	4, // 1: sentinelwaf.agent.v1.AgentToManager.event:type_name -> sentinelwaf.agent.v1.SecurityEvent
-	0, // 2: sentinelwaf.agent.v1.AgentService.Enroll:input_type -> sentinelwaf.agent.v1.EnrollRequest
-	2, // 3: sentinelwaf.agent.v1.AgentService.Stream:input_type -> sentinelwaf.agent.v1.AgentToManager
-	1, // 4: sentinelwaf.agent.v1.AgentService.Enroll:output_type -> sentinelwaf.agent.v1.EnrollResponse
-	5, // 5: sentinelwaf.agent.v1.AgentService.Stream:output_type -> sentinelwaf.agent.v1.ManagerToAgent
+	3, // 0: swipeshield.agent.v1.AgentToManager.heartbeat:type_name -> swipeshield.agent.v1.Heartbeat
+	4, // 1: swipeshield.agent.v1.AgentToManager.event:type_name -> swipeshield.agent.v1.SecurityEvent
+	0, // 2: swipeshield.agent.v1.AgentService.Enroll:input_type -> swipeshield.agent.v1.EnrollRequest
+	2, // 3: swipeshield.agent.v1.AgentService.Stream:input_type -> swipeshield.agent.v1.AgentToManager
+	1, // 4: swipeshield.agent.v1.AgentService.Enroll:output_type -> swipeshield.agent.v1.EnrollResponse
+	5, // 5: swipeshield.agent.v1.AgentService.Stream:output_type -> swipeshield.agent.v1.ManagerToAgent
 	4, // [4:6] is the sub-list for method output_type
 	2, // [2:4] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

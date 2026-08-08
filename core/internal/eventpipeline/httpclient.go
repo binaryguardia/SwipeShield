@@ -24,7 +24,7 @@ func (c *httpClient) post(ctx context.Context, url string, body []byte) error {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "sentinelwaf/1.0")
+	req.Header.Set("User-Agent", "swipeshield/1.0")
 	resp, err := hc.Do(req)
 	if err != nil {
 		return err

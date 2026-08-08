@@ -1,4 +1,4 @@
-# Manager image: the sentinelwaf binary with the dashboard bundled
+# Manager image: the swipeshield binary with the dashboard bundled
 # (`-tags webui`). Built from the repo root so it can reach dashboard/.
 FROM node:20-alpine AS dashboard
 WORKDIR /dash
@@ -15,13 +15,13 @@ COPY core/cmd ./cmd
 COPY core/internal ./internal
 COPY core/pkg ./pkg
 COPY --from=dashboard /dash/dist ./internal/webui/dist
-RUN CGO_ENABLED=0 go build -tags webui -ldflags "-s -w" -o /sentinelwaf ./cmd/sentinelwaf
+RUN CGO_ENABLED=0 go build -tags webui -ldflags "-s -w" -o /swipeshield ./cmd/swipeshield
 
 FROM alpine:3.20
-RUN adduser -D -u 10001 sentinelwaf
-COPY --from=build /sentinelwaf /usr/local/bin/sentinelwaf
-RUN mkdir -p /var/lib/sentinelwaf && chown sentinelwaf /var/lib/sentinelwaf
-USER sentinelwaf
-VOLUME ["/var/lib/sentinelwaf"]
+RUN adduser -D -u 10001 swipeshield
+COPY --from=build /swipeshield /usr/local/bin/swipeshield
+RUN mkdir -p /var/lib/swipeshield && chown swipeshield /var/lib/swipeshield
+USER swipeshield
+VOLUME ["/var/lib/swipeshield"]
 EXPOSE 9090 9443
-ENTRYPOINT ["/usr/local/bin/sentinelwaf"]
+ENTRYPOINT ["/usr/local/bin/swipeshield"]

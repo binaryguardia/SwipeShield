@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/binaryguardia/sentinelwaf/internal/store"
+	"github.com/binaryguardia/swipeshield/internal/store"
 )
 
 // agentStore returns the backing store or nil.
@@ -79,7 +79,7 @@ func (s *Server) enrollCommand(r *http.Request, token string) string {
 	if port == "" {
 		port = "9443"
 	}
-	return "sentinelwaf-agent enroll -m " + host + ":" + port + " -t " + token
+	return "swipeshield-agent enroll -m " + host + ":" + port + " -t " + token
 }
 
 func indexByte(s string, b byte) int {

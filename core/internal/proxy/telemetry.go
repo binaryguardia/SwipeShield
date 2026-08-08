@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/binaryguardia/sentinelwaf/internal/eventpipeline"
-	"github.com/binaryguardia/sentinelwaf/internal/telemetry"
+	"github.com/binaryguardia/swipeshield/internal/eventpipeline"
+	"github.com/binaryguardia/swipeshield/internal/telemetry"
 )
 
 // Stats returns a snapshot of gateway activity for the Management API.

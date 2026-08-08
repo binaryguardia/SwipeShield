@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/config"
 )
 
 func detector() *Detector {

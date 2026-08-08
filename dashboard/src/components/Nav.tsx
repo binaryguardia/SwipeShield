@@ -15,11 +15,13 @@ export default function Nav() {
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cyan-500/15 font-mono text-xs font-bold text-cyan-400 ring-1 ring-cyan-500/40">
-              SW
-            </span>
+            <img
+              src="/logo.jpeg"
+              alt="SwipeShield"
+              className="h-7 w-7 rounded-md object-cover ring-1 ring-cyan-500/40"
+            />
             <span className="font-mono text-sm font-semibold tracking-wide text-slate-100">
-              SentinelWAF
+              SwipeShield
             </span>
           </Link>
           <nav className="flex items-center gap-1">

@@ -1,10 +1,10 @@
-# SentinelWAF quickstart stack.
+# SwipeShield quickstart stack.
 #
 #   docker compose up --build
 #   ./scripts/smoke-test.sh
 #
 # Services:
-#   waf      the SentinelWAF reverse-proxy gateway (config in deploy/compose/)
+#   waf      the SwipeShield reverse-proxy gateway (config in deploy/compose/)
 #   manager  the control plane: admin dashboard (:9090) + agent channel (:9443)
 #   demo     the reference backend with REST + GraphQL + WebSocket endpoints
 #            (test/demoapp)
@@ -18,11 +18,11 @@ services:
     build:
       context: core
       dockerfile: Dockerfile
-    command: ["-config", "/etc/sentinelwaf/config.json"]
+    command: ["-config", "/etc/swipeshield/config.json"]
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
-      - ./deploy/compose/config.json:/etc/sentinelwaf/config.json:ro
+      - ./deploy/compose/config.json:/etc/swipeshield/config.json:ro
     depends_on:
       - demo
     healthcheck:
@@ -36,13 +36,13 @@ services:
     build:
       context: .
       dockerfile: core/Dockerfile.manager
-    command: ["-config", "/etc/sentinelwaf/manager.json"]
+    command: ["-config", "/etc/swipeshield/manager.json"]
     ports:
       - "127.0.0.1:9090:9090"
       - "127.0.0.1:9443:9443"
     volumes:
-      - ./deploy/compose/manager.json:/etc/sentinelwaf/manager.json:ro
-      - manager-data:/var/lib/sentinelwaf
+      - ./deploy/compose/manager.json:/etc/swipeshield/manager.json:ro
+      - manager-data:/var/lib/swipeshield
     depends_on:
       - demo
     healthcheck:

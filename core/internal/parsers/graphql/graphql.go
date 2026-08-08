@@ -1,5 +1,5 @@
 // Package graphql parses GraphQL queries into a real AST and computes the
-// telemetry SentinelWAF enforces on: query depth, complexity/cost,
+// telemetry SwipeShield enforces on: query depth, complexity/cost,
 // alias/batching attacks, and introspection probes. It deliberately uses a
 // full parser (vektah/gqlparser) rather than string matching — string regex
 // on GraphQL is exactly what a 2026 WAF must not do.
@@ -13,8 +13,8 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/decision"
 )
 
 // Report is the outcome of one GraphQL inspection.

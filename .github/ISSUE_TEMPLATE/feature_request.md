@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Propose a new capability for SentinelWAF
+about: Propose a new capability for SwipeShield
 title: "[feature] "
 labels: enhancement
 assignees: ''
@@ -12,7 +12,7 @@ What can't you do today, or what's painful? A short narrative beats a list.
 
 ## Proposed capability
 
-What should SentinelWAF do, and where does it fit?
+What should SwipeShield do, and where does it fit?
 
 - Layer / module affected (rules, parsers, bot scoring, ML, LLM protection,
   WASM plugins, Envoy sidecar, dashboard, deployment)

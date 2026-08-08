@@ -21,7 +21,7 @@ type zeroRTTKey struct{}
 // 0-RTT has no replay protection: an attacker who captured an early request
 // can resend it. Requests must therefore never be treated as fresh; the flag
 // lets operators log the distinction and apply stricter rules to 0-RTT
-// traffic. SentinelWAF inspects every request through the identical pipeline
+// traffic. SwipeShield inspects every request through the identical pipeline
 // regardless, so a replayed 0-RTT request is still fully scanned.
 func zeroRTT(ctx context.Context) bool {
 	v, _ := ctx.Value(zeroRTTKey{}).(bool)

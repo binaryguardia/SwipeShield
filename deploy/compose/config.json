@@ -58,7 +58,7 @@
     "backend": "memory"
   },
   "events": {
-    "log_path": "/tmp/sentinelwaf-events.log",
+    "log_path": "/tmp/swipeshield-events.log",
     "body_truncate": 2048
   },
   "fingerprint": {

@@ -15,7 +15,7 @@ logging.basicConfig(
     stream=sys.stderr,
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
-logger = logging.getLogger("sentinelwaf.ml")
+logger = logging.getLogger("swipeshield.ml")
 
 
 @asynccontextmanager
@@ -24,7 +24,7 @@ async def _lifespan(app):
     yield
 
 
-app = FastAPI(title="SentinelWAF ML Anomaly Scorer", lifespan=_lifespan)
+app = FastAPI(title="SwipeShield ML Anomaly Scorer", lifespan=_lifespan)
 
 
 @app.get("/healthz")

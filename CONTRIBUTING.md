@@ -1,6 +1,6 @@
-# Contributing to SentinelWAF
+# Contributing to SwipeShield
 
-Thanks for your interest. SentinelWAF is an open-source, self-hostable Web
+Thanks for your interest. SwipeShield is an open-source, self-hostable Web
 Application & API Protection platform (WAAP). We welcome contributions —
 especially WASM plugin authors, protocol-parser reviewers, and rule authors.
 

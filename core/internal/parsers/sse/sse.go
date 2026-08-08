@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
-	"github.com/binaryguardia/sentinelwaf/internal/ruleengine"
+	"github.com/binaryguardia/swipeshield/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/ruleengine"
 )
 
 // IsEventStream reports whether a response is Server-Sent Events.

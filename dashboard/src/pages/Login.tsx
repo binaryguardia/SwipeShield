@@ -34,11 +34,13 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/15 font-mono text-base font-bold text-cyan-400 ring-1 ring-cyan-500/40">
-            SW
-          </div>
+          <img
+            src="/logo.jpeg"
+            alt="SwipeShield"
+            className="h-12 w-12 rounded-xl object-cover ring-1 ring-cyan-500/40"
+          />
           <div className="text-center">
-            <h1 className="font-mono text-lg font-semibold text-slate-100">SentinelWAF</h1>
+            <h1 className="font-mono text-lg font-semibold text-slate-100">SwipeShield</h1>
             <p className="text-sm text-slate-500">Management Console</p>
           </div>
         </div>

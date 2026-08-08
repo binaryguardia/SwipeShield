@@ -9,16 +9,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/binaryguardia/sentinelwaf/internal/botscoring"
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/decision"
-	"github.com/binaryguardia/sentinelwaf/internal/fingerprint"
-	"github.com/binaryguardia/sentinelwaf/internal/llmprotect"
-	"github.com/binaryguardia/sentinelwaf/internal/mlclient"
-	"github.com/binaryguardia/sentinelwaf/internal/parsers/graphql"
-	"github.com/binaryguardia/sentinelwaf/internal/ratelimit"
-	"github.com/binaryguardia/sentinelwaf/internal/ruleengine"
-	"github.com/binaryguardia/sentinelwaf/internal/wasmplugins"
+	"github.com/binaryguardia/swipeshield/internal/botscoring"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/decision"
+	"github.com/binaryguardia/swipeshield/internal/fingerprint"
+	"github.com/binaryguardia/swipeshield/internal/llmprotect"
+	"github.com/binaryguardia/swipeshield/internal/mlclient"
+	"github.com/binaryguardia/swipeshield/internal/parsers/graphql"
+	"github.com/binaryguardia/swipeshield/internal/ratelimit"
+	"github.com/binaryguardia/swipeshield/internal/ruleengine"
+	"github.com/binaryguardia/swipeshield/internal/wasmplugins"
 )
 
 // inspect runs the full protection pipeline against one buffered request and

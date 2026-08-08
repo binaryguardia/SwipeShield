@@ -1,5 +1,5 @@
-// Package agentclient is the client side of the SentinelWAF agent channel,
-// used by the sentinelwaf-agent binary. It dials OUT to the manager, enrolls
+// Package agentclient is the client side of the SwipeShield agent channel,
+// used by the swipeshield-agent binary. It dials OUT to the manager, enrolls
 // with a one-time token, and maintains an always-on stream that pushes
 // heartbeats and security events.
 package agentclient
@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/binaryguardia/sentinelwaf/internal/agent/agentpb"
+	"github.com/binaryguardia/swipeshield/internal/agent/agentpb"
 )
 
 // Config is the agent's persisted identity (written by `enroll`).
@@ -164,15 +164,15 @@ const DefaultInterval = 30 * time.Second
 
 // DefaultConfigPath is where the agent stores its identity.
 func DefaultConfigPath() string {
-	if p := os.Getenv("SENTINELWAF_AGENT_CONFIG"); p != "" {
+	if p := os.Getenv("SWIPESHIELD_AGENT_CONFIG"); p != "" {
 		return p
 	}
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return xdg + "/sentinelwaf-agent/agent.json"
+		return xdg + "/swipeshield-agent/agent.json"
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "/etc/sentinelwaf-agent/agent.json"
+		return "/etc/swipeshield-agent/agent.json"
 	}
-	return home + "/.config/sentinelwaf-agent/agent.json"
+	return home + "/.config/swipeshield-agent/agent.json"
 }

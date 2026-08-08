@@ -1,6 +1,6 @@
 # Build artifacts
-/sentinelwaf
-/sentinelwaf-agent
+/swipeshield
+/swipeshield-agent
 /bin/
 /dist/
 

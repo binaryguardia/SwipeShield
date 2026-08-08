@@ -12,8 +12,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/binaryguardia/sentinelwaf/internal/config"
-	"github.com/binaryguardia/sentinelwaf/internal/parsers/sse"
+	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/parsers/sse"
 )
 
 // buildReverseProxy constructs the upstream proxy for a site. It wires a
