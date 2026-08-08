@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+// Agent channel between SentinelWAF agents (on monitored servers) and the
+// manager (the sentinelwaf gateway). Agents dial OUT to the manager, so they
+// work behind NAT with no inbound ports on monitored hosts.
+package sentinelwaf.agent.v1;
+
+option go_package = "github.com/binaryguardia/sentinelwaf/internal/agent/agentpb";
+
+service AgentService {
+  // Enroll presents a one-time token and receives a long-term agent secret.
+  rpc Enroll(EnrollRequest) returns (EnrollResponse);
+  // Stream is a bidirectional stream: the agent pushes heartbeats and security
+  // events; the manager can reply with commands.
+  rpc Stream(stream AgentToManager) returns (stream ManagerToAgent);
+}
+
+message EnrollRequest {
+  string token = 1;
+  string hostname = 2;
+  string os_info = 3;
+}
+
+message EnrollResponse {
+  string agent_id = 1;
+  string secret = 2;
+  string status = 3;
+}
+
+message AgentToManager {
+  oneof msg {
+    Heartbeat heartbeat = 1;
+    SecurityEvent event = 2;
+  }
+}
+
+message Heartbeat {
+  int64 ts = 1;
+  string hostname = 2;
+  string os_info = 3;
+}
+
+message SecurityEvent {
+  int64 ts = 1;
+  string type = 2;
+  string payload = 3; // JSON object
+}
+
+message ManagerToAgent {
+  string command = 1; // "ping", "ack"
+  string payload = 2;
+}

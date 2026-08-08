@@ -1,0 +1,34 @@
+# Build artifacts
+/sentinelwaf
+/sentinelwaf-agent
+/bin/
+/dist/
+
+# Local runtime data
+/data/
+*.db
+*.db-*
+
+# Logs
+*.log
+*.out
+
+# Environment
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# eBPF / WASM intermediates
+*.o
+*.so
+internal/ebpf/*/bytecode*
+
+# Bundled dashboard (build artifact of scripts/build-dashboard.sh)
+/internal/webui/dist/
+

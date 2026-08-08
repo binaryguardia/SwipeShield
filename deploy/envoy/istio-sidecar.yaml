@@ -1,0 +1,98 @@
+# Reference Kubernetes deployment: SentinelWAF as a mesh sidecar inspecting
+# traffic inside the service mesh via Envoy ext_proc.
+#
+# The pod runs two containers sharing the network namespace:
+#   1. `backend`      — the application under protection.
+#   2. `sentinelwaf`  — the decision engine; starts the ext_proc gRPC service
+#      on port 5090 (set envoy.listen). Istio's sidecar proxy streams request
+#      headers/bodies to it and enforces its verdicts.
+#
+# SentinelWAF never modifies traffic itself in this mode; it only decides.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-with-sentinelwaf
+  namespace: apps
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app-with-sentinelwaf
+  template:
+    metadata:
+      labels:
+        app: app-with-sentinelwaf
+    spec:
+      containers:
+        - name: backend
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+        - name: sentinelwaf
+          image: sentinelwaf:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - -config=/etc/sentinelwaf/config.json
+            - -mgmt=false
+          ports:
+            - name: extproc
+              containerPort: 5090
+          env:
+            - name: SENTINELWAF_ENVOY_LISTEN
+              value: ":5090"
+          volumeMounts:
+            - name: waf-config
+              mountPath: /etc/sentinelwaf
+              readOnly: true
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+      volumes:
+        - name: waf-config
+          configMap:
+            name: sentinelwaf-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinelwaf-config
+  namespace: apps
+data:
+  config.json: |
+    {
+      "version": 1,
+      "envoy": { "listen": ":5090" },
+      "sites": [
+        {
+          "id": "app",
+          "name": "app",
+          "domains": ["app.apps.svc.cluster.local"],
+          "backend": "http://127.0.0.1:80",
+          "fail_mode": "block",
+          "rules": { "crs": { "enabled": true }, "custom": [] },
+          "graphql": { "enabled": false },
+          "grpc": { "enabled": false },
+          "max_body_bytes": 1048576
+        }
+      ],
+      "events": { "log_path": "/var/log/sentinelwaf/events.jsonl" }
+    }
+---
+# Istio VirtualService so the mesh routes app traffic through the ext_proc
+# inspection. The sidecar's Envoy already applies the ext_proc filter from the
+# mesh-wide config; this service just exposes the app for mesh traffic.
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-with-sentinelwaf
+  namespace: apps
+spec:
+  selector:
+    app: app-with-sentinelwaf
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

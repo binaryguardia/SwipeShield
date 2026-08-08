@@ -1,0 +1,64 @@
+# SentinelWAF quickstart stack.
+#
+#   docker compose up --build
+#   ./scripts/smoke-test.sh
+#
+# Services:
+#   waf      the SentinelWAF reverse-proxy gateway (config in deploy/compose/)
+#   manager  the control plane: admin dashboard (:9090) + agent channel (:9443)
+#   demo     the reference backend with REST + GraphQL + WebSocket endpoints
+#            (test/demoapp)
+#
+# The gateway listens on 127.0.0.1:8080 and forwards to the demo app over the
+# compose network. The manager serves the dashboard on 127.0.0.1:9090 and the
+# agent enrollment/streaming channel on 127.0.0.1:9443. See README.md.
+
+services:
+  waf:
+    build:
+      context: core
+      dockerfile: Dockerfile
+    command: ["-config", "/etc/sentinelwaf/config.json"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./deploy/compose/config.json:/etc/sentinelwaf/config.json:ro
+    depends_on:
+      - demo
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--header", "Host: localhost", "http://127.0.0.1:8080/api/hello", "-U", "Mozilla/5.0 (healthcheck)"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+    restart: unless-stopped
+
+  manager:
+    build:
+      context: .
+      dockerfile: core/Dockerfile.manager
+    command: ["-config", "/etc/sentinelwaf/manager.json"]
+    ports:
+      - "127.0.0.1:9090:9090"
+      - "127.0.0.1:9443:9443"
+    volumes:
+      - ./deploy/compose/manager.json:/etc/sentinelwaf/manager.json:ro
+      - manager-data:/var/lib/sentinelwaf
+    depends_on:
+      - demo
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9090/api/v1/sites", "-U", "healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  demo:
+    build:
+      context: test/demoapp
+      dockerfile: Dockerfile
+    expose:
+      - "9000"
+    restart: unless-stopped
+
+volumes:
+  manager-data:

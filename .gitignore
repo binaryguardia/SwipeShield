@@ -1,0 +1,55 @@
+# Build artifacts
+core/bin/
+core/dist/
+core/internal/webui/dist/
+/sentinelwaf
+/sentinelwaf-agent
+test/demoapp/demoapp
+test/e2e/smoke/smoke
+*.exe
+*.test
+
+# Dependencies
+vendor/
+node_modules/
+core/vendor/
+
+# Go
+core/*.out
+*.prof
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+ml-service/.venv/
+llm-protection-service/.venv/
+
+# Env / secrets
+.env
+.env.local
+*.pem
+*.key
+!deploy/**/tls/*.example
+.terraform/
+
+# Logs / data
+*.log
+data/
+core/data/
+logs/
+
+# Dashboard
+dashboard/dist/
+dashboard/.vite/
+npm-debug.log*
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# CI / tooling
+.gitleaks.toml
+gitleaks-report.json

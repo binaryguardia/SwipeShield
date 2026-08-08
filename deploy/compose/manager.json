@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "listeners": [
+    {"address": ":8081"}
+  ],
+  "sites": [
+    {
+      "id": "demo",
+      "name": "Demo Application",
+      "domains": ["localhost", "demo.example.com"],
+      "backend": "http://demo:9000",
+      "preserve_host": false,
+      "fail_mode": "closed",
+      "crs": {"enabled": true, "sqli": true, "xss": true, "rce": true, "path_traversal": true, "lfi": true, "protocol": true},
+      "bot_score": {"enabled": true, "challenge_enabled": true, "challenge_threshold": 0.55, "block_threshold": 0.9, "pow_difficulty": 2, "max_challenges_per_ip": 10}
+    }
+  ],
+  "events": {
+    "log_path": "/var/lib/sentinelwaf/events.log"
+  },
+  "admin": {
+    "enabled": true,
+    "address": ":9090"
+  },
+  "agent": {
+    "enabled": true,
+    "listen": ":9443"
+  },
+  "db": {
+    "path": "/var/lib/sentinelwaf/sentinelwaf.db"
+  },
+  "auth": {
+    "jwt_secret": "compose-dev-secret-change-me",
+    "admin_user": "admin",
+    "admin_password_hash": "admin",
+    "token_ttl": "8h"
+  }
+}

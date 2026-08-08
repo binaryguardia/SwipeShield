@@ -1,0 +1,27 @@
+# Manager image: the sentinelwaf binary with the dashboard bundled
+# (`-tags webui`). Built from the repo root so it can reach dashboard/.
+FROM node:20-alpine AS dashboard
+WORKDIR /dash
+COPY dashboard/package.json dashboard/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY dashboard/ ./
+RUN npm run build
+
+FROM golang:1.25-alpine AS build
+WORKDIR /src
+COPY core/go.mod core/go.sum ./
+RUN go mod download
+COPY core/cmd ./cmd
+COPY core/internal ./internal
+COPY core/pkg ./pkg
+COPY --from=dashboard /dash/dist ./internal/webui/dist
+RUN CGO_ENABLED=0 go build -tags webui -ldflags "-s -w" -o /sentinelwaf ./cmd/sentinelwaf
+
+FROM alpine:3.20
+RUN adduser -D -u 10001 sentinelwaf
+COPY --from=build /sentinelwaf /usr/local/bin/sentinelwaf
+RUN mkdir -p /var/lib/sentinelwaf && chown sentinelwaf /var/lib/sentinelwaf
+USER sentinelwaf
+VOLUME ["/var/lib/sentinelwaf"]
+EXPOSE 9090 9443
+ENTRYPOINT ["/usr/local/bin/sentinelwaf"]

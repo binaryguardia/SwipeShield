@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "listeners": [
+    {"address": ":8080"},
+    {
+      "address": ":8443",
+      "tls": true,
+      "cert_path": "certs/cert.pem",
+      "key_path": "certs/key.pem",
+      "http3": true,
+      "allow_0rtt": false
+    }
+  ],
+  "sites": [
+    {
+      "id": "demo",
+      "name": "Demo Application",
+      "domains": ["localhost", "demo.example.com"],
+      "backend": "http://127.0.0.1:9000",
+      "preserve_host": false,
+      "max_body_bytes": 4194304,
+      "fail_mode": "closed",
+      "crs": {
+        "enabled": true,
+        "sqli": true,
+        "xss": true,
+        "rce": true,
+        "path_traversal": true,
+        "lfi": true,
+        "protocol": true
+      },
+      "rate_limit": {
+        "per_ip_requests_per_min": 120,
+        "per_api_key_per_min": 300,
+        "per_graphql_op_per_min": 60,
+        "burst": 20
+      },
+      "bot_score": {
+        "enabled": true,
+        "challenge_enabled": true,
+        "challenge_threshold": 0.55,
+        "block_threshold": 0.9,
+        "pow_difficulty": 3,
+        "max_challenges_per_ip": 10
+      },
+      "graphql": {
+        "enabled": true,
+        "max_depth": 10,
+        "max_complexity": 1000,
+        "block_introspection": true,
+        "block_batching": true,
+        "max_aliases": 25
+      },
+      "websocket": {
+        "enabled": true,
+        "max_messages_per_min": 60,
+        "max_message_bytes": 65536
+      },
+      "sse": {
+        "enabled": true
+      },
+      "llm_routes": []
+    }
+  ],
+  "rate_limit": {
+    "backend": "memory"
+  },
+  "events": {
+    "log_path": "data/events.log",
+    "webhook_timeout": "5s",
+    "body_truncate": 2048
+  },
+  "plugins": {
+    "dir": "../wasm-plugins-examples/wat-plugins/dist",
+    "timeout": "500ms",
+    "max_memory": 33554432
+  },
+  "fingerprint": {
+    "enabled": true
+  },
+  "ml": {
+    "enabled": false,
+    "url": "http://127.0.0.1:9500",
+    "timeout": "250ms",
+    "fail_mode": "open",
+    "threshold": 0.8,
+    "circuit_open": 5
+  },
+  "llm_protection": {
+    "enabled": true,
+    "fail_mode": "closed"
+  },
+  "envoy": {
+    "listen": ":9100"
+  }
+}
