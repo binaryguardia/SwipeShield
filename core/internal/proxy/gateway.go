@@ -18,6 +18,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"runtime/debug"
 	"net/url"
 	"strings"
 	"sync"
@@ -33,6 +34,7 @@ import (
 	"github.com/binaryguardia/swipeshield/internal/llmprotect"
 	"github.com/binaryguardia/swipeshield/internal/mlclient"
 	"github.com/binaryguardia/swipeshield/internal/parsers/grpcproto"
+	"github.com/binaryguardia/swipeshield/internal/parsers/sse"
 	"github.com/binaryguardia/swipeshield/internal/parsers/websocket"
 	"github.com/binaryguardia/swipeshield/internal/ratelimit"
 	"github.com/binaryguardia/swipeshield/internal/ruleengine"
@@ -53,6 +55,7 @@ type Gateway struct {
 
 	mlEnabled   bool
 	mlThreshold float64
+	llmEnabled  bool
 
 	stats telemetry.Collector
 	feed  *eventpipeline.LiveFeed
@@ -123,15 +126,20 @@ func New(cfg *config.Config, opts Options) (*Gateway, error) {
 	}
 	g.mlEnabled = cfg.ML.Enabled
 	g.mlThreshold = cfg.ML.Threshold
+	g.llmEnabled = cfg.LLMProtect.Enabled
 	if err := g.reload(cfg); err != nil {
 		return nil, err
 	}
 	if g.events == nil {
+		sinks := []eventpipeline.Sink{eventpipeline.NewFileSinkSafe(cfg.Events.LogPath, 100<<20), g.feed}
+		if cfg.Events.WebhookURL != "" {
+			sinks = append(sinks, eventpipeline.NewWebhookSink(cfg.Events.WebhookURL, cfg.Events.WebhookSchema, time.Duration(cfg.Events.WebhookTimeout)))
+		}
 		g.events = eventpipeline.New(eventpipeline.Options{
 			RedactFields: cfg.Events.RedactFields,
 			BodyTruncate: cfg.Events.BodyTruncate,
 			Schema:       cfg.Events.WebhookSchema,
-		}, eventpipeline.NewFileSinkSafe(cfg.Events.LogPath, 100<<20), g.feed)
+		}, sinks...)
 	} else {
 		g.events.AddSink(g.feed)
 	}
@@ -228,7 +236,7 @@ func (g *Gateway) buildSiteRT(s *config.Site) (*siteRT, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid backend %q: %w", s.Backend, err)
 	}
-	rt.proxy = buildReverseProxy(target, s, g)
+	rt.proxy = buildReverseProxy(target, s, g, engine, g.emitSSEViolation)
 
 	// WebSocket per-message inspector.
 	if s.WebSocket != nil && s.WebSocket.Enabled {
@@ -264,7 +272,7 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if rec := recover(); rec != nil {
 			log.Error().Interface("panic", rec).Str("host", r.Host).
-				Str("path", r.URL.Path).Msg("gateway recovered from panic")
+				Str("path", r.URL.Path).Str("stack", string(debug.Stack())).Msg("gateway recovered from panic")
 			http.Error(w, "internal error", http.StatusInternalServerError)
 		}
 	}()
@@ -332,7 +340,12 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Protocol upgrade (WebSocket) — handled as a persistent connection.
 	if site.WebSocket != nil && site.WebSocket.Enabled && websocket.IsUpgrade(r) {
 		ctx.Protocol = "websocket"
+		// Mid-session violations append reasons to ctx for their own events;
+		// restore the handshake snapshot so the session-close event only
+		// reflects the initial request verdict.
+		preReasons := append([]decision.Reason(nil), ctx.Reasons...)
 		g.handleWebSocket(ctx, w, r)
+		ctx.Reasons = preReasons
 		g.emit(ctx, start, 101, decision.Allow, false)
 		return
 	}
@@ -373,16 +386,17 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch verdict.Decision {
 	case decision.Block:
-		g.deny(ctx, w, r, start, decision.Block, verdict.StatusCode, ctx.Reasons...)
+		g.deny(ctx, w, r, start, decision.Block, verdict.StatusCode)
 		return
 	case decision.Challenge:
 		g.handleChallenge(ctx, w, r, start)
 		return
 	case decision.Log:
-		g.emit(ctx, start, http.StatusOK, decision.Log, false)
+		g.serve(ctx, w, r, start, decision.Log)
+		return
 	}
 
-	// Approved: restore the body for proxying and forward.
+	// Allowed: restore the body for proxying and forward.
 	g.serve(ctx, w, r, start, decision.Allow)
 }
 
@@ -509,10 +523,43 @@ func (g *Gateway) handleWebSocket(ctx *decision.InspectContext, w http.ResponseW
 	}
 }
 
-// emitWebsocketViolation logs a dropped WS message as a challenge event.
+// emitWebsocketViolation logs a dropped WS message as a blocked event.
 func (g *Gateway) emitWebsocketViolation(ctx *decision.InspectContext, reasons []decision.Reason) {
+	ctx.Reasons = append(ctx.Reasons, reasons...)
 	g.emit(ctx, time.Now(), 1008, decision.Block, true)
-	_ = reasons
+}
+
+// emitSSEViolation publishes a log-only event for a rule match on an SSE
+// data: line. Headers are already sent when a violation is discovered, so the
+// stream is flagged rather than torn down (per RULES.md).
+func (g *Gateway) emitSSEViolation(req *http.Request, v sse.Violation) {
+	site := g.store.Get().SiteByDomain(req.Host)
+	ctx := &decision.InspectContext{
+		Request:  req,
+		Site:     site,
+		ClientIP: clientIP(req),
+		Host:     req.Host,
+		Path:     req.URL.Path,
+		Method:   req.Method,
+		Protocol: "sse",
+		Transport: func() string {
+			switch req.ProtoMajor {
+			case 3:
+				return "h3"
+			case 2:
+				return "h2"
+			default:
+				return "h1"
+			}
+		}(),
+	}
+	ctx.AddReason(decision.Reason{
+		Module:  "sse",
+		RuleID:  v.RuleID,
+		Message: "sse data line matched: " + v.Line,
+		Status:  http.StatusForbidden,
+	})
+	g.emit(ctx, time.Now(), http.StatusOK, decision.Log, false)
 }
 
 func (g *Gateway) rtErr() error { return errors.New("site runtime not found") }

@@ -14,12 +14,14 @@ import (
 
 	"github.com/binaryguardia/swipeshield/internal/config"
 	"github.com/binaryguardia/swipeshield/internal/parsers/sse"
+	"github.com/binaryguardia/swipeshield/internal/ruleengine"
 )
 
 // buildReverseProxy constructs the upstream proxy for a site. It wires a
 // bounded transport, SSE stream inspection (when enabled), hop-by-hop header
-// handling, and a fail-mode-aware error handler.
-func buildReverseProxy(target *url.URL, s *config.Site, g *Gateway) *httputilReverseProxy {
+// handling, and a fail-mode-aware error handler. engine is the site rule
+// engine used to evaluate SSE data lines; onSSEViolation emits the finding.
+func buildReverseProxy(target *url.URL, s *config.Site, g *Gateway, engine *ruleengine.Engine, onSSEViolation func(*http.Request, sse.Violation)) *httputilReverseProxy {
 	transport := &http.Transport{
 		Proxy:                 http.ProxyFromEnvironment,
 		DialContext:           (&net.Dialer{Timeout: 5 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
@@ -67,11 +69,12 @@ func buildReverseProxy(target *url.URL, s *config.Site, g *Gateway) *httputilRev
 	}
 
 	// SSE: inspect the response stream for suspicious data: lines.
-	if s.SSE != nil && s.SSE.Enabled {
+	if s.SSE != nil && s.SSE.Enabled && onSSEViolation != nil {
 		rp.Transport = &sseTransport{
-			base:    transport,
-			enabled: true,
-			engine:  nil, // response inspection is log-only in v1
+			base:         transport,
+			enabled:      true,
+			engine:       engine,
+			onViolation:  onSSEViolation,
 		}
 		rp.FlushInterval = -1
 	}
@@ -80,11 +83,12 @@ func buildReverseProxy(target *url.URL, s *config.Site, g *Gateway) *httputilRev
 }
 
 // sseTransport wraps the round trip and wraps event-stream bodies with a
-// scanning reader that logs violations found in `data:` lines.
+// scanning reader that reports violations found in `data:` lines.
 type sseTransport struct {
-	base    http.RoundTripper
-	enabled bool
-	engine  interface{ Evaluate([]byte) }
+	base        http.RoundTripper
+	enabled     bool
+	engine      *ruleengine.Engine
+	onViolation func(*http.Request, sse.Violation)
 }
 
 func (t *sseTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -93,8 +97,11 @@ func (t *sseTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 	if t.enabled && sse.IsEventStream(resp.Header) {
-		insp := sse.NewInspector(nil)
+		insp := sse.NewInspector(t.engine)
 		scanner := sse.NewStreamWriter(&voidWriter{}, insp)
+		if t.onViolation != nil {
+			scanner.OnViolation = func(v sse.Violation) { t.onViolation(req, v) }
+		}
 		resp.Body = &scanningBody{inner: resp.Body, scan: scanner}
 	}
 	return resp, nil

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package greeter;
+
+// Greeter is the reference gRPC service used to demonstrate SwipeShield's
+// schema-aware, field-level protobuf inspection. The WAF compiles this schema
+// at runtime (schema_dir), resolves the incoming method to its input message,
+// and runs CRS rules against the flattened field values.
+message HelloRequest {
+  string name = 1;
+  string comment = 2;
+}
+
+message HelloReply {
+  string message = 1;
+}
+
+service Greeter {
+  rpc SayHello(HelloRequest) returns (HelloReply);
+}

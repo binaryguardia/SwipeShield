@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/binaryguardia/swipeshield/internal/config"
+	"github.com/binaryguardia/swipeshield/internal/eventpipeline"
 )
 
 func testBackend(t *testing.T) *httptest.Server {
@@ -245,3 +247,78 @@ func TestProxyFailsClosedOnEngineError(t *testing.T) {
 }
 
 var _ = time.Second
+
+// captureSink records emitted events in memory for assertions.
+type captureSink struct {
+	events []eventpipeline.Event
+}
+
+func (c *captureSink) Write(_ context.Context, e *eventpipeline.Event) error {
+	c.events = append(c.events, *e)
+	return nil
+}
+
+func (c *captureSink) Close() error { return nil }
+
+// TestProxyBlockedEventHasSingleReason guards against double-appending
+// ctx.Reasons when a blocked request is denied (each reason must appear once
+// in the audit event, not twice).
+func TestProxyBlockedEventHasSingleReason(t *testing.T) {
+	be := testBackend(t)
+	site := baseSite(be.URL)
+	site.RateLimit = &config.SiteRateLimit{PerIPRequestsPerMin: 1, Burst: 0}
+
+	cap := &captureSink{}
+	pipe := eventpipeline.New(eventpipeline.Options{}, cap)
+	g, err := New(&config.Config{
+		Version: 1,
+		Sites:   []config.Site{*site},
+		Events:  config.EventConfig{LogPath: ""},
+	}, Options{Events: pipe})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { g.Close() })
+
+	send := func() *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodGet, "http://example.com/", nil)
+		req.Host = "example.com"
+		req.RemoteAddr = "10.0.0.9:4321"
+		rr := httptest.NewRecorder()
+		g.ServeHTTP(rr, req)
+		return rr
+	}
+
+	if rr := send(); rr.Code != http.StatusOK {
+		t.Fatalf("first request expected 200, got %d", rr.Code)
+	}
+	rr := send()
+	if rr.Code != http.StatusTooManyRequests {
+		t.Fatalf("second request expected 429, got %d", rr.Code)
+	}
+
+	// Close flushes the queue so every emitted event is delivered.
+	pipe.Close()
+	if len(cap.events) != 2 {
+		t.Fatalf("expected 2 events, got %d", len(cap.events))
+	}
+	var blocked *eventpipeline.Event
+	for i := range cap.events {
+		if cap.events[i].Blocked {
+			blocked = &cap.events[i]
+			break
+		}
+	}
+	if blocked == nil {
+		t.Fatal("no blocked event emitted")
+	}
+	var rateReasons int
+	for _, r := range blocked.Reasons {
+		if r.RuleID == "RATE-IP" {
+			rateReasons++
+		}
+	}
+	if rateReasons != 1 {
+		t.Fatalf("expected exactly 1 RATE-IP reason in blocked event, got %d: %+v", rateReasons, blocked.Reasons)
+	}
+}

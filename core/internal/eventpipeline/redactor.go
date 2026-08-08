@@ -45,25 +45,26 @@ func NewRedactor(fields []string, trunc int) *Redactor {
 	return r
 }
 
-// RedactBody truncates and strips sensitive keys from a body string. JSON
+// RedactBody strips sensitive keys and truncates a request body string. JSON
 // bodies get field-level redaction; other bodies are truncated only.
 func (r *Redactor) RedactBody(body string) string {
+	if isJSONish(body) {
+		var m map[string]any
+		if err := json.Unmarshal([]byte(body), &m); err == nil {
+			r.redactMap(m)
+			if out, err := json.Marshal(m); err == nil {
+				body = string(out)
+			}
+		}
+	}
+	return r.truncate(body)
+}
+
+func (r *Redactor) truncate(body string) string {
 	if len(body) > r.trunc {
-		body = body[:r.trunc] + "...(truncated)"
+		return body[:r.trunc] + "...(truncated)"
 	}
-	if !isJSONish(body) {
-		return body
-	}
-	var m map[string]any
-	if err := json.Unmarshal([]byte(body), &m); err != nil {
-		return body
-	}
-	r.redactMap(m)
-	out, err := json.Marshal(m)
-	if err != nil {
-		return body
-	}
-	return string(out)
+	return body
 }
 
 func (r *Redactor) redactMap(m map[string]any) {
@@ -77,7 +78,11 @@ func (r *Redactor) redactMap(m map[string]any) {
 			continue
 		}
 		if r.isSensitive(k) {
-			m[k] = r.special[strings.ToLower(k)]
+			if rep, ok := r.special[strings.ToLower(k)]; ok {
+				m[k] = rep
+			} else {
+				m[k] = "[REDACTED]"
+			}
 		}
 	}
 }

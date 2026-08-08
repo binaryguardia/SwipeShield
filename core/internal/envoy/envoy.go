@@ -49,12 +49,14 @@ type streamState struct {
 	r      *http.Request
 	body   []byte
 	closed bool // verdict already sent for this request
+	onBody bool // last processed message was request_body
 }
 
 // Process implements envoy.service.ext_proc.v3.ExternalProcessor. It handles
 // the inbound (request) direction: request_headers then buffered
-// request_body. Evaluation happens once, when EndOfStream is seen. Response
-// messages are passed through untouched.
+// request_body. Envoy processes the stream sequentially, so a non-terminal
+// headers message gets a bare CONTINUE and evaluation happens once on the
+// terminal (EndOfStream) message. Response messages pass through untouched.
 func (s *Server) Process(stream extproc.ExternalProcessor_ProcessServer) error {
 	st := &streamState{}
 	for {
@@ -67,16 +69,21 @@ func (s *Server) Process(stream extproc.ExternalProcessor_ProcessServer) error {
 		}
 		switch {
 		case req.GetRequestHeaders() != nil:
+			st.onBody = false
 			if st.r == nil {
 				st.r = buildRequest(req.GetRequestHeaders())
 			}
 			if !req.GetRequestHeaders().GetEndOfStream() {
+				if err := s.send(stream, continueResponse()); err != nil {
+					return err
+				}
 				continue
 			}
 			if err := s.decide(stream, st); err != nil {
 				return err
 			}
 		case req.GetRequestBody() != nil:
+			st.onBody = true
 			st.body = append(st.body, req.GetRequestBody().GetBody()...)
 			if !req.GetRequestBody().GetEndOfStream() {
 				continue
@@ -114,6 +121,9 @@ func (s *Server) decide(stream extproc.ExternalProcessor_ProcessServer, st *stre
 		}
 		return s.send(stream, blockResponse(statusCode, reasonText(verdict)))
 	default:
+		if st.onBody {
+			return s.send(stream, allowBodyResponse(verdict))
+		}
 		return s.send(stream, allowResponse(verdict))
 	}
 }
@@ -128,20 +138,50 @@ func (s *Server) send(stream extproc.ExternalProcessor_ProcessServer, resp *extp
 // allowResponse tells Envoy to continue; the request carries the verdict in a
 // header so downstream filters/observability can see it.
 func allowResponse(verdict decision.Verdict) *extproc.ProcessingResponse {
-	mutation := &corev3.HeaderValueOption{
-		Header: &corev3.HeaderValue{
-			Key:   "x-swipeshield-verdict",
-			Value: string(verdict.Decision),
-		},
-		AppendAction: corev3.HeaderValueOption_OVERWRITE_IF_EXISTS_OR_ADD,
-	}
 	return &extproc.ProcessingResponse{
 		Response: &extproc.ProcessingResponse_RequestHeaders{
 			RequestHeaders: &extproc.HeadersResponse{
-				Response: &extproc.CommonResponse{
-					Status:         extproc.CommonResponse_CONTINUE,
-					HeaderMutation: &extproc.HeaderMutation{SetHeaders: []*corev3.HeaderValueOption{mutation}},
-				},
+				Response: allowCommon(verdict),
+			},
+		},
+	}
+}
+
+// allowBodyResponse is allowResponse, but wrapped as the request_body variant
+// Envoy expects in reply to a request_body message.
+func allowBodyResponse(verdict decision.Verdict) *extproc.ProcessingResponse {
+	return &extproc.ProcessingResponse{
+		Response: &extproc.ProcessingResponse_RequestBody{
+			RequestBody: &extproc.BodyResponse{
+				Response: allowCommon(verdict),
+			},
+		},
+	}
+}
+
+// allowCommon builds the CommonResponse that lets Envoy continue and stamps
+// the verdict header on the request.
+func allowCommon(verdict decision.Verdict) *extproc.CommonResponse {
+	mutation := &corev3.HeaderValueOption{
+		Header: &corev3.HeaderValue{
+			Key:      "x-swipeshield-verdict",
+			RawValue: []byte(string(verdict.Decision)),
+		},
+		AppendAction: corev3.HeaderValueOption_OVERWRITE_IF_EXISTS_OR_ADD,
+	}
+	return &extproc.CommonResponse{
+		Status:         extproc.CommonResponse_CONTINUE,
+		HeaderMutation: &extproc.HeaderMutation{SetHeaders: []*corev3.HeaderValueOption{mutation}},
+	}
+}
+
+// continueResponse acknowledges a non-terminal headers message so Envoy
+// proceeds to send the buffered body.
+func continueResponse() *extproc.ProcessingResponse {
+	return &extproc.ProcessingResponse{
+		Response: &extproc.ProcessingResponse_RequestHeaders{
+			RequestHeaders: &extproc.HeadersResponse{
+				Response: &extproc.CommonResponse{Status: extproc.CommonResponse_CONTINUE},
 			},
 		},
 	}
@@ -199,6 +239,9 @@ func buildRequest(h *extproc.HttpHeaders) *http.Request {
 	for _, hv := range h.GetHeaders().GetHeaders() {
 		key := strings.ToLower(hv.GetKey())
 		val := hv.GetValue()
+		if val == "" {
+			val = string(hv.GetRawValue())
+		}
 		switch key {
 		case ":method":
 			r.Method = val

@@ -3,6 +3,7 @@ package mgmtapi
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -76,7 +77,13 @@ func (s *Server) handleDeleteBlocklist(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// validJA4 accepts either a real JA4 fingerprint produced by the capture
+// pipeline (e.g. "t13d0406h2_39e807bd56df_fb71836bce29") or a bare 32-hex
+// token kept for backwards compatibility.
 func validJA4(h string) bool {
+	if ja4Re.MatchString(h) {
+		return true
+	}
 	if len(h) != 32 {
 		return false
 	}
@@ -87,6 +94,8 @@ func validJA4(h string) bool {
 	}
 	return true
 }
+
+var ja4Re = regexp.MustCompile(`^[a-z0-9]+_[a-f0-9]{12}_[a-f0-9]{12}$`)
 
 // --- Metrics ---
 

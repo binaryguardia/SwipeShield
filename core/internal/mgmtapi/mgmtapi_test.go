@@ -258,6 +258,14 @@ func TestFingerprintBlocklist(t *testing.T) {
 		t.Fatal("ja4 not added to config")
 	}
 
+	// A real JA4 fingerprint from the capture pipeline must also be accepted.
+	realJA4 := "t13d0406h2_39e807bd56df_fb71836bce29"
+	resp = do(t, "POST", base+"/fingerprint/blocklist", tok, map[string]string{"ja4": realJA4})
+	if resp.StatusCode != 201 {
+		t.Fatalf("add real ja4: want 201, got %d (%s)", resp.StatusCode, readBody(t, resp.Body))
+	}
+	resp.Body.Close()
+
 	resp = do(t, "GET", base+"/fingerprint/blocklist", tok, nil)
 	if resp.StatusCode != 200 {
 		t.Fatalf("list: %d", resp.StatusCode)
@@ -265,9 +273,22 @@ func TestFingerprintBlocklist(t *testing.T) {
 	var list []blocklistEntry
 	json.NewDecoder(resp.Body).Decode(&list)
 	resp.Body.Close()
-	if len(list) != 1 || list[0].JA4 != ja4 {
+	if len(list) != 2 {
 		t.Fatalf("list: %+v", list)
 	}
+	got := map[string]bool{}
+	for _, e := range list {
+		got[e.JA4] = true
+	}
+	if !got[ja4] || !got[realJA4] {
+		t.Fatalf("list missing entries: %+v", list)
+	}
+
+	resp = do(t, "DELETE", base+"/fingerprint/blocklist/"+realJA4, tok, nil)
+	if resp.StatusCode != 204 {
+		t.Fatalf("delete real ja4: %d", resp.StatusCode)
+	}
+	resp.Body.Close()
 
 	resp = do(t, "DELETE", base+"/fingerprint/blocklist/"+ja4, tok, nil)
 	if resp.StatusCode != 204 {

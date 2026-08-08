@@ -68,6 +68,38 @@ func sendHeaders(stream extproc.ExternalProcessor_ProcessClient, eos bool) {
 	})
 }
 
+// TestRawValueHeadersRegression covers the header encoding Envoy 1.37 uses in
+// practice: pseudo-header values arrive in HeaderValue.raw_value, not value.
+func TestRawValueHeadersRegression(t *testing.T) {
+	gw := &fakeGW{verdict: decision.Verdict{Decision: decision.Allow}}
+	client, done := startServer(t, gw)
+	defer done()
+
+	stream, err := client.Process(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = stream.Send(&extproc.ProcessingRequest{
+		Request: &extproc.ProcessingRequest_RequestHeaders{
+			RequestHeaders: &extproc.HttpHeaders{
+				EndOfStream: true,
+				Headers: &corev3.HeaderMap{Headers: []*corev3.HeaderValue{
+					{Key: ":method", RawValue: []byte("GET")},
+					{Key: ":path", RawValue: []byte("/api/hello")},
+					{Key: ":authority", RawValue: []byte("example.com")},
+				}},
+			},
+		},
+	})
+
+	if _, err := recv(stream); err != nil {
+		t.Fatal(err)
+	}
+	if gw.gotHost != "example.com" || gw.gotMethod != "GET" || gw.gotPath != "/api/hello" {
+		t.Fatalf("raw_value request mapping wrong: %s %s %s", gw.gotMethod, gw.gotPath, gw.gotHost)
+	}
+}
+
 func sendBody(stream extproc.ExternalProcessor_ProcessClient, data []byte, eos bool) {
 	_ = stream.Send(&extproc.ProcessingRequest{
 		Request: &extproc.ProcessingRequest_RequestBody{
@@ -171,6 +203,15 @@ func TestBodyBufferedEvaluation(t *testing.T) {
 	sendHeaders(stream, false)
 	sendBody(stream, []byte(`{"a":"s`), false)
 	sendBody(stream, []byte(`ql injection"}`), true)
+
+	// Non-terminal headers must be acknowledged so Envoy sends the body.
+	continueResp, err := recv(stream)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if continueResp.GetRequestHeaders().GetResponse().GetStatus() != extproc.CommonResponse_CONTINUE {
+		t.Fatalf("expected CONTINUE on headers, got %v", continueResp.Response)
+	}
 
 	resp, err := recv(stream)
 	if err != nil {

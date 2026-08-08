@@ -35,14 +35,18 @@
         "pow_difficulty": 2,
         "max_challenges_per_ip": 10
       },
-      "graphql": {
-        "enabled": true,
-        "max_depth": 10,
-        "max_complexity": 1000,
-        "block_introspection": true,
-        "block_batching": true,
-        "max_aliases": 25
-      },
+   "graphql": {
+    "enabled": true,
+    "max_depth": 10,
+    "max_complexity": 1000,
+    "block_introspection": true,
+    "block_batching": true,
+    "max_aliases": 25
+   },
+   "grpc": {
+    "enabled": true,
+    "schema_dir": "/proto"
+   },
       "websocket": {
         "enabled": true,
         "max_messages_per_min": 60,

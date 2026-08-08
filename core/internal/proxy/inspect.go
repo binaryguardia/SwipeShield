@@ -82,6 +82,7 @@ func (g *Gateway) inspect(ctx *decision.InspectContext) (*decision.InspectContex
 // sidecar (deploy/envoy): Envoy streams request headers/body fragments here and
 // receives the verdict to enforce (allow / block / challenge).
 func (g *Gateway) Evaluate(r *http.Request, body []byte) (decision.Verdict, error) {
+	start := time.Now()
 	host := r.Host
 	if host == "" {
 		host = r.Header.Get("Host")
@@ -118,6 +119,27 @@ func (g *Gateway) Evaluate(r *http.Request, body []byte) (decision.Verdict, erro
 	_, verdict, err := g.inspect(ctx)
 	if err != nil {
 		return decision.Verdict{}, err
+	}
+	switch verdict.Decision {
+	case decision.Block:
+		status := verdict.StatusCode
+		if status == 0 {
+			status = http.StatusForbidden
+		}
+		g.emit(ctx, start, status, decision.Block, true)
+	case decision.Challenge:
+		// ext_proc has no challenge page; the data plane just sees a block.
+		status := verdict.StatusCode
+		if status == 0 {
+			status = http.StatusForbidden
+		}
+		g.emit(ctx, start, status, decision.Challenge, true)
+	default:
+		status := verdict.StatusCode
+		if status == 0 {
+			status = http.StatusOK
+		}
+		g.emit(ctx, start, status, decision.Allow, false)
 	}
 	return verdict, nil
 }
@@ -332,14 +354,16 @@ func (g *Gateway) inspectPlugins(ctx *decision.InspectContext) {
 			status = http.StatusForbidden
 		case wasmplugins.ActionChallenge:
 			status = http.StatusTooManyRequests
+		case wasmplugins.ActionLog:
+			status = 0 // informational; recorded but does not block
+		default:
+			continue // allow: nothing to report
 		}
-		if status != 0 {
-			ctx.AddReason(decision.Reason{
-				Module: "wasm", RuleID: v.RuleID,
-				Message: "wasm plugin: " + v.Message,
-				Score:   v.Score, Status: status,
-			})
-		}
+		ctx.AddReason(decision.Reason{
+			Module: "wasm", RuleID: v.RuleID,
+			Message: "wasm plugin: " + v.Message,
+			Score:   v.Score, Status: status,
+		})
 	}
 }
 
@@ -355,7 +379,7 @@ func flattenHeaders(h http.Header) map[string]string {
 
 // inspectLLM flags prompt-injection patterns on operator-flagged AI routes.
 func (g *Gateway) inspectLLM(ctx *decision.InspectContext) {
-	if !ctx.Site.LLMProtectEnabled() {
+	if !g.llmEnabled || !ctx.Site.LLMProtectEnabled() {
 		return
 	}
 	if !llmprotect.IsLLMRoute(ctx.Path, ctx.Site.LLMRoutes) {

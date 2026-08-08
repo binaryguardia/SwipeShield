@@ -1,10 +1,11 @@
 // Command demoapp is the reference backend used by the compose quickstart and
-// the fresh-clone smoke test. It exposes three endpoints so SwipeShield's
-// protocol-aware inspection can be demonstrated end to end:
+// the fresh-clone smoke test. It exposes the endpoints SwipeShield's
+// protocol-aware inspection demonstrates end to end:
 //
 //	GET/POST /api/*   REST endpoints
 //	POST /graphql     a tiny GraphQL responder (echoes the query)
 //	GET  /ws          a WebSocket echo server
+//	GET  /events      a Server-Sent Events stream (includes a suspicious line)
 package main
 
 import (
@@ -46,6 +47,26 @@ func main() {
 		// Echo the query back so the WAF can be seen inspecting it; a real
 		// GraphQL executor would resolve this against a schema.
 		fmt.Fprintf(w, `{"data":{"query":%q}}`, strings.TrimSpace(req.Query))
+	})
+
+	mux.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
+		fl, _ := w.(http.Flusher)
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+		// Include one line that should trip the WAF's SSE inspection (SQLi).
+		for _, l := range []string{
+			`{"msg":"tick"}`,
+			`{"user":"' OR 1=1 --"}`,
+			`{"msg":"done"}`,
+		} {
+			if _, err := fmt.Fprintf(w, "data: %s\n\n", l); err != nil {
+				return
+			}
+			if fl != nil {
+				fl.Flush()
+			}
+		}
 	})
 
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {

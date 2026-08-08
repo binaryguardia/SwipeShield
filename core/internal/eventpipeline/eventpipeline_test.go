@@ -52,6 +52,36 @@ func TestPipelineRedactsSensitiveFields(t *testing.T) {
 	}
 }
 
+// TestRedactLongJSONBody guards against truncation before JSON parsing: a body
+// longer than the truncate limit must still get field-level redaction, not a
+// mangled, unparseable prefix leaking credentials. The long value lives in a
+// key that sorts after the sensitive ones so the redacted markers survive the
+// truncation window.
+func TestRedactLongJSONBody(t *testing.T) {
+	body := `{"password":"sup3rS3cret","username":"alice","zzz":"` + strings.Repeat("x", 500) + `"}`
+	r := NewRedactor([]string{"username"}, 200)
+	out := r.RedactBody(body)
+	if !strings.Contains(out, "[REDACTED]") {
+		t.Fatalf("long JSON body lost field redaction: %q", out)
+	}
+	if !strings.Contains(out, "(truncated)") {
+		t.Fatalf("long JSON body not truncated: %d bytes", len(out))
+	}
+	if strings.Contains(out, "sup3rS3cret") {
+		t.Fatal("password leaked in long JSON body")
+	}
+}
+
+// TestRedactCustomFieldMarker ensures a configured field outside the built-in
+// special map is replaced with "[REDACTED]", not an empty string.
+func TestRedactCustomFieldMarker(t *testing.T) {
+	r := NewRedactor([]string{"email"}, 2048)
+	out := r.RedactBody(`{"email":"alice@example.com","name":"alice"}`)
+	if !strings.Contains(out, `"email":"[REDACTED]"`) {
+		t.Fatalf("custom field not redacted with marker: %s", out)
+	}
+}
+
 func TestPipelineTruncatesBody(t *testing.T) {
 	rec := &recSink{fn: func(*Event) {}}
 	p := New(Options{BodyTruncate: 16}, rec)

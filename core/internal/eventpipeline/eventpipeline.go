@@ -73,6 +73,7 @@ type Pipeline struct {
 	mu       sync.Mutex
 	sinks    []Sink
 	redactor *Redactor
+	schema   string
 	dropped  uint64
 	closed   bool
 }
@@ -103,6 +104,10 @@ func New(opts Options, sinks ...Sink) *Pipeline {
 		cancel:   cancel,
 		sinks:    sinks,
 		redactor: NewRedactor(opts.RedactFields, opts.BodyTruncate),
+		schema:   opts.Schema,
+	}
+	if p.schema == "" {
+		p.schema = "swipeshield"
 	}
 	p.wg.Add(1)
 	go p.drain()
@@ -132,13 +137,13 @@ func (p *Pipeline) Emit(e Event) {
 
 func (p *Pipeline) schemaOrDefault(s string) string {
 	if s == "" || s == "swipeshield" {
-		return p.schema() // keep caller's override if set
+		return p.defaultSchema() // keep caller's override if set
 	}
 	return s
 }
 
-func (p *Pipeline) schema() string {
-	return "swipeshield"
+func (p *Pipeline) defaultSchema() string {
+	return p.schema
 }
 
 func (p *Pipeline) drain() {
@@ -147,7 +152,10 @@ func (p *Pipeline) drain() {
 		select {
 		case <-p.ctx.Done():
 			return
-		case e := <-p.queue:
+		case e, ok := <-p.queue:
+			if !ok {
+				return
+			}
 			p.dispatch(&e)
 		}
 	}

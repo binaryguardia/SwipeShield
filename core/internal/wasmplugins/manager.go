@@ -164,14 +164,20 @@ func (m *Manager) Evaluate(req PluginRequest) ([]PluginVerdict, error) {
 	m.mu.RUnlock()
 
 	var verdicts []PluginVerdict
+	var firstErr error
 	for _, name := range names {
 		vs, err := m.runOne(name, in)
 		if err != nil {
-			return verdicts, fmt.Errorf("plugin %s: %w", name, err)
+			// A single bad plugin must not silence the others: record the
+			// error and keep going (fail-open per-plugin).
+			if firstErr == nil {
+				firstErr = fmt.Errorf("plugin %s: %w", name, err)
+			}
+			continue
 		}
 		verdicts = append(verdicts, vs...)
 	}
-	return verdicts, nil
+	return verdicts, firstErr
 }
 
 func (m *Manager) runOne(name string, stdin []byte) ([]PluginVerdict, error) {

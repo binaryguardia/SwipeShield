@@ -28,8 +28,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Manager E2E test** (`scripts/test-manager.sh`): verifies dashboard, auth,
   management API, agent enrollment, liveness, and event streaming against the
   compose stack.
+- **Gateway E2E verification** (`test/e2e/`, `core/internal/*/*_e2e_test.go`,
+  `test/demoapp/proto/`): end-to-end checks proving each protection layer
+  blocks real traffic on a live gateway — gRPC protobuf inspection (h2
+  trailers), SSE stream scanning, per-IP/API-key/GraphQL-op rate limiting,
+  WASM plugin enforcement with timeout, HTTP/3 (QUIC) transport, hot rule
+  reload, webhook + redaction event pipeline, ML GraphQL scoring, LLM
+  prompt-injection protection, Redis-backed multi-instance rate limiting,
+  Envoy `ext_proc` sidecar, fingerprint blocklist, and eBPF graceful-disable
+  (gateway boots and still blocks L7 with `ebpf.enabled` on a host without
+  BPF privileges).
 
 ### Changed
+
+- Manager compose healthcheck now probes the unauthenticated dashboard root
+  instead of `/api/v1/sites`, so the manager reports `healthy` (the previous
+  probe got a 401).
+- `core/go.mod` Go directive bumped to `1.25.12` to pick up Go stdlib security
+  fixes flagged by govulncheck.
 
 - Module path renamed to `github.com/binaryguardia/swipeshield`; agent
   protobuf regenerated for the new package path.

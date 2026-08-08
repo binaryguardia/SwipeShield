@@ -65,7 +65,9 @@ func relayClientToBackend(ctx context.Context, client, backend net.Conn, insp *I
 				if opt.OnViolation != nil {
 					opt.OnViolation(reasons)
 				}
-				_ = WriteFrame(backend, Frame{FIN: true, Opcode: OpClose, Payload: []byte{0x03, 0xf0}}) // 1008
+				closeFrame := Frame{FIN: true, Opcode: OpClose, Payload: []byte{0x03, 0xf0}} // 1008 policy violation
+				_ = WriteFrameServer(client, closeFrame)                                    // tell the client why
+				_ = WriteFrame(backend, Frame{Masked: true, FIN: true, Opcode: OpClose, Payload: []byte{0x03, 0xf0}}) // masked: toward the backend the relay is a client
 				return fmt.Errorf("websocket: message rejected by inspection")
 			}
 		}

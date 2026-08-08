@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 
 	"github.com/binaryguardia/swipeshield/internal/fingerprint"
@@ -35,9 +36,18 @@ func WrapListener(ln net.Listener, enabled bool) net.Listener {
 
 // ConnContext is the http.Server.ConnContext hook that attaches the captured
 // ClientHello to the per-connection context, so ServeHTTP can fingerprint the
-// request. Wire it into every server that uses WrapListener.
+// request. Wire it into every server that uses WrapListener. ServeTLS wraps
+// accepted conns in *tls.Conn before ConnContext runs, so we unwrap through
+// tls.Conn.NetConn to reach the fingerprint.Conn underneath.
 func ConnContext(ctx context.Context, c net.Conn) context.Context {
-	if fc, ok := c.(*fingerprint.Conn); ok {
+	var fc *fingerprint.Conn
+	switch v := c.(type) {
+	case *fingerprint.Conn:
+		fc = v
+	case *tls.Conn:
+		fc, _ = v.NetConn().(*fingerprint.Conn)
+	}
+	if fc != nil {
 		if h := fc.Hello(); h != nil {
 			ctx = context.WithValue(ctx, fpCtxKey{}, h)
 		}

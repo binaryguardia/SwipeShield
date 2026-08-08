@@ -23,6 +23,8 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
 	"github.com/binaryguardia/swipeshield/internal/agent"
 	"github.com/binaryguardia/swipeshield/internal/config"
@@ -30,6 +32,7 @@ import (
 	"github.com/binaryguardia/swipeshield/internal/mgmtapi"
 	"github.com/binaryguardia/swipeshield/internal/proxy"
 	"github.com/binaryguardia/swipeshield/internal/store"
+	"github.com/binaryguardia/swipeshield/internal/wasmplugins"
 	"github.com/binaryguardia/swipeshield/internal/webui"
 )
 
@@ -70,7 +73,24 @@ func main() {
 		log.Fatal().Err(err).Str("config", *configPath).Msg("invalid configuration")
 	}
 
-	g, err := proxy.New(cfg, proxy.Options{})
+	// WASM plugins: load every .wasm under cfg.Plugins.Dir into the wazero
+	// host. Each plugin runs on the request path under a hard timeout and
+	// memory budget.
+	var plugins *wasmplugins.Manager
+	if cfg.Plugins.Dir != "" {
+		plugins, err = wasmplugins.NewManager(wasmplugins.Options{
+			Dir:       cfg.Plugins.Dir,
+			Timeout:   time.Duration(cfg.Plugins.Timeout),
+			MaxMemory: cfg.Plugins.MaxMemory,
+		})
+		if err != nil {
+			log.Fatal().Err(err).Str("dir", cfg.Plugins.Dir).Msg("failed to load WASM plugins")
+		}
+		defer plugins.Close()
+		log.Info().Strs("plugins", plugins.Names()).Msg("wasm plugins loaded")
+	}
+
+	g, err := proxy.New(cfg, proxy.Options{Plugins: plugins})
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to start gateway")
 	}
@@ -165,9 +185,15 @@ func main() {
 	servers := make([]*http.Server, 0, len(cfg.ListenerList()))
 	h3servers := make([]*proxy.HTTP3, 0)
 	for _, l := range cfg.ListenerList() {
+		// Cleartext listeners accept both HTTP/1.1 and HTTP/2 (h2c) so gRPC
+		// and other HTTP/2 clients can reach the gateway directly.
+		srvHandler := handler
+		if !l.TLS {
+			srvHandler = h2c.NewHandler(handler, &http2.Server{})
+		}
 		srv := &http.Server{
 			Addr:              l.Address,
-			Handler:           handler,
+			Handler:           srvHandler,
 			ConnContext:       proxy.ConnContext,
 			ReadHeaderTimeout: 10 * time.Second,
 			IdleTimeout:       60 * time.Second,

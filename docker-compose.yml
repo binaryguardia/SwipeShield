@@ -23,6 +23,7 @@ services:
       - "127.0.0.1:8080:8080"
     volumes:
       - ./deploy/compose/config.json:/etc/swipeshield/config.json:ro
+      - ./test/demoapp/proto:/proto:ro
     depends_on:
       - demo
     healthcheck:
@@ -46,7 +47,7 @@ services:
     depends_on:
       - demo
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9090/api/v1/sites", "-U", "healthcheck"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9090/", "-U", "healthcheck"]
       interval: 5s
       timeout: 3s
       retries: 20

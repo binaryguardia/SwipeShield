@@ -45,6 +45,9 @@ type StreamWriter struct {
 	// not possible once headers are sent, so SSE inspection is log/flag
 	// only (per RULES.md, an inline decision must happen pre-response).
 	Violations []Violation
+	// OnViolation, when set, is invoked for every rule match on a data:
+	// line as soon as it is scanned (used to stream events to the gateway).
+	OnViolation func(Violation)
 }
 
 // NewStreamWriter wraps w.
@@ -77,7 +80,11 @@ func (s *StreamWriter) scan(p []byte) {
 		req := &http.Request{Method: http.MethodGet, Header: http.Header{"Content-Type": {"text/plain"}}}
 		res := s.insp.rules.Evaluate(req, payload)
 		for _, m := range res.Matches {
-			s.Violations = append(s.Violations, Violation{Line: truncate(string(payload), 256), RuleID: m.RuleID})
+			v := Violation{Line: truncate(string(payload), 256), RuleID: m.RuleID}
+			s.Violations = append(s.Violations, v)
+			if s.OnViolation != nil {
+				s.OnViolation(v)
+			}
 		}
 	}
 }
