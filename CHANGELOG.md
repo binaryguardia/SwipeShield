@@ -49,6 +49,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Dashboard rendered a blank screen: the top-level layout route had no
+  `path`, so React Router matched nothing at `/` and mounted an empty tree.
+  The layout route is now `path="*"` (`dashboard/src/App.tsx`).
 - Dashboard assets (`/assets/*.js`, `*.css`) now serve with their real content
   and MIME type. The SPA fallback's existence check used a leading-slash path,
   which `io/fs` rejects, so every asset request fell through to the app shell

@@ -12,6 +12,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route
+        path="*"
         element={
           <RequireAuth>
             <div className="flex min-h-screen flex-col">
